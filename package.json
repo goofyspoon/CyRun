@@ -1,0 +1,29 @@
+{
+  "name": "g33",
+  "version": "1.0.0",
+  "description": "CyRun is a multiplayer web-based game similar to Pac-Man. Users will run awayfrom an enemy while picking up resources. If the user picks up all the resources beforebeing caught by the enemy, the user wins. If the enemy catches the user before the userpicks up all the resources, the enemy wins. The layout of the game is also scalable toallow for easier or harder challenges. Users will be able to play the game with at least oneother player. This game will need to update in real time in order to connect the two users.We will be able to scale the quality of the UI to provide enough work for the entiresemester.",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "connect-redis": "^5.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "hbs": "^4.1.1",
+    "mysql": "^2.18.1",
+    "nodemon": "^2.0.5",
+    "redis": "^3.0.2",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.linux.iastate.edu/fall2020-cs319-gitprojects/g33.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
