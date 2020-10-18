@@ -22,20 +22,20 @@ socket.on('lobbyUsers', ({lobby, users}) => {
 
 // Messages from Server
 socket.on('message', message => {
-  console.log(message);
   const p = document.createElement('p');
   p.innerText = message;
   chat.appendChild(p);
+  chat.scrollTop = chat.scrollHeight; // automatically scroll to bottom of chat messages
 });
 
-// Send message -- NEEDS TO BE COMPLETED! TODO
+// Send message
 sendChat.addEventListener('click', (e) => {
-  console.log('button press' + chatbox.value);
   e.preventDefault();
-
-  socket.emit('lobbyMessage', chatbox.value);
-  chatbox.value = '';
-  chatbox.focus();
+  if (chatbox.value !== '') {
+    socket.emit('lobbyMessage', {username: {username, lobby}.username, message: chatbox.value});
+    chatbox.value = '';
+    chatbox.focus();
+  }
 });
 
 // Add lobby name to page
@@ -49,6 +49,9 @@ function outputUsers(users) {
   users.forEach(user => {
     const li = document.createElement('li');
     li.innerText = user.username;
+    if (user.username === username) {
+      li.style.color = "red";
+    }
     userList.appendChild(li);
   });
 }

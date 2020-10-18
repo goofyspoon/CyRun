@@ -35,11 +35,11 @@ io.on('connection', socket => {
       const user = userJoin(socket.id, username, lobby);
       socket.join(user.lobby);
 
-      // Welcome current user
-      socket.emit('message', 'Welcome to CyRun!');
+      // Welcome current user to lobby
+      socket.emit('message', 'Welcome to CyRun lobby ' + user.lobby);
 
       // Broadcast when a user connects
-      socket.broadcast.to(user.lobby).emit('message', user.username + ' has joined the lobby');
+      socket.broadcast.to(user.lobby).emit('message', user.username + ' joined the lobby');
 
       // Send users and lobby info
       io.to(user.lobby).emit('lobbyUsers', {
@@ -49,9 +49,11 @@ io.on('connection', socket => {
     }// end else statement
   });
 
-  // lobby chat -- TODO
-  socket.on('lobbyMessage', (message) => {
-    io.to(user.lobby).emit('message', message);
+  // Lobby chat
+  // lobby chat -- normal message
+  socket.on('lobbyMessage', ({username, message}) => {
+    const user = getCurrentUser(socket.id);
+    io.to(user.lobby).emit('message', username + ': ' + message);
   });
 
   // Runs when client disconnects
@@ -59,7 +61,7 @@ io.on('connection', socket => {
     const user = userLeave(socket.id);
 
     if (user) {
-      io.to(user.lobby).emit('message', user.username + ' has left the lobby');
+      io.to(user.lobby).emit('message', user.username + ' left the lobby');
 
       // Send users and lobby info
       io.to(user.lobby).emit('lobbyUsers', {
