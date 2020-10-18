@@ -20,21 +20,33 @@ app.use(express.static('views')); // Set static folder to /views
 io.on('connection', socket => {
   console.log('New socket connection', socket.id); // Development purposes only. Delete this.
   socket.on('joinLobby', ({username, lobby}) => {
-    const user = userJoin(socket.id, username, lobby);
+    // Check the lobby to ensure there will not be two users with the same name.
+    var usernameExists = false;
+    let usersInLobby = getLobbyUsers(lobby);
+    for (var i = 0; i < usersInLobby.length; i++) {
+      if (usersInLobby[i].username === username) {
+        socket.emit('message', 'There already exists a user in lobby: \"' + lobby + '\" with the name: \"' + username + '\"');
+        usernameExists = true;
+        break;
+      }
+    }
+    if (usernameExists) socket.disconnect();
+    else {
+      const user = userJoin(socket.id, username, lobby);
+      socket.join(user.lobby);
 
-    socket.join(user.lobby);
+      // Welcome current user
+      socket.emit('message', 'Welcome to CyRun!');
 
-    // Welcome current user
-    socket.emit('message', 'Welcome to CyRun!');
+      // Broadcast when a user connects
+      socket.broadcast.to(user.lobby).emit('message', user.username + ' has joined the lobby');
 
-    // Broadcast when a user connects
-    socket.broadcast.to(user.lobby).emit('message', user.username + 'has joined the lobby');
-
-    // Send users and lobby info
-    io.to(user.lobby).emit('lobbyUsers', {
-      lobby: user.lobby,
-      users: getLobbyUsers(user.lobby)
-    });
+      // Send users and lobby info
+      io.to(user.lobby).emit('lobbyUsers', {
+        lobby: user.lobby,
+        users: getLobbyUsers(user.lobby)
+      });
+    }// end else statement
   });
 
   //Runs when client disconnects

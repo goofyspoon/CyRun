@@ -18,13 +18,13 @@ socket.on('lobbyUsers', ({lobby, users}) => {
 });
 
 // Messages from Server
-// Development purposes only. Delete this.
 socket.on('message', message => {
   console.log(message);
 });
 
 // Add lobby name to page
 function outputLobbyName(lobby) {
+
   lobbyName.innerText = "Lobby " + lobby;
 }
 
@@ -38,19 +38,3 @@ function outputUsers(users) {
   });
 
 }
-
-leave.addEventListener('click', () =>  {
-  socket.emit('disconnect');
-});
-
-/*
-// this client username submission
-submit.addEventListener('click', function() {
-  socket.emit('user', username.value); //Emit username to server
-});
-
-// user submission from server
-socket.on('user', (username) => {
-  // update list of users
-});
-*/
