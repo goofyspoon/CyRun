@@ -1,28 +1,18 @@
 <html>
 <head>
 <title>Cyrun</title>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script>
-$(document).ready(function(){
-    var username;
-    $("#submit").click(function(){
-        username=$("#username").val();
-        /*
-        * Perform some validation here.
-        */
-        $.post("/username",{username:username},function(data){
-            if(data==='done') {
-                window.location.href="/lobby";
-            }
-        });
-    });
-});
-</script>
+<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
 </head>
 <body>
-<input type="text" size="40" placeholder="Type your username" id="username"><br />
-<input type="button" value="Submit" id="submit">
+  <form action="lobby.html">
+    <label for="username">Username</label><br />
+    <input type="text" size="40" placeholder="Type your username" id="username" name="username" required><br />
+    <label for="room">Game Loby</label><br />
+    <input type="text" size="40" placeholder="Type the name of the game lobby" id="gamelobby" name="lobby" required></br />
+    <button type="submit" id="submit">Join lobby</button>
+</form>
 
-<script src="/game.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 </body>
 </html>

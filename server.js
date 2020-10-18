@@ -1,66 +1,56 @@
+
+const http = require('http');
 const express = require('express');
 const socket = require('socket.io');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const router = express.Router();
+const {
+  userJoin,
+  getCurrentUser,
+  userLeave,
+  getLobbyUsers
+} = require('./utils/users');
+
 const app = express();
+const server = http.createServer(app);
+const io = socket(server);
+const PORT = 3000 || process.anv.PORT;
 
-app.use(session({secret: 'ssshhhhh',saveUninitialized: true,resave: true}));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static(__dirname + '/views'));
+app.use(express.static('views')); // Set static folder to /views
 
-//var sess; // global session, NOT recommended
+// Run when client connects
+io.on('connection', socket => {
+  console.log('New socket connection', socket.id); // Development purposes only. Delete this.
+  socket.on('joinLobby', ({username, lobby}) => {
+    const user = userJoin(socket.id, username, lobby);
 
-router.get('/',(req,res) => {
-    if(req.session.username) {
-        return res.redirect('/lobby');
-    }
-    res.sendFile('index.html');
-});
+    socket.join(user.lobby);
 
-router.post('/username',(req,res) => {
-    req.session.username = req.body.username;
-    res.end('done');
-});
+    // Welcome current user
+    socket.emit('message', 'Welcome to CyRun!');
 
-router.get('/lobby',(req,res) => {
-    if(req.session.username) {
-        res.write(`<h1>Welcome to the game lobby, ${req.session.username} </h1><br>`);
-        res.end('<a href='+'/logout'+'>Logout</a>');
-    }
-    else {
-        res.write('<h1>Please enter username first.</h1>');
-        res.end('<a href='+'/'+'>Login</a>');
-    }
-});
+    // Broadcast when a user connects
+    socket.broadcast.to(user.lobby).emit('message', user.username + 'has joined the lobby');
 
-router.get('/logout',(req,res) => {
-    req.session.destroy((err) => {
-        if(err) {
-            return console.log(err);
-        }
-        res.redirect('/');
+    // Send users and lobby info
+    io.to(user.lobby).emit('lobbyUsers', {
+      lobby: user.lobby,
+      users: getLobbyUsers(user.lobby)
     });
+  });
 
+  //Runs when client disconnects
+  socket.on('disconnect', () => {
+    const user = userLeave(socket.id);
+
+    if (user) {
+      io.to(user.lobby).emit('message', user.username + ' has left the lobby');
+
+      // Send users and lobby info
+      io.to(user.lobby).emit('lobbyUsers', {
+        lobby: user.lobby,
+        users: getLobbyUsers(user.lobby)
+      });
+    }
+  });
 });
 
-app.use('/', router);
-
-var server = app.listen(process.env.PORT || 3000,() => {
-    console.log(`App Started on PORT ${process.env.PORT || 3000}`);
-});
-
-//SessionBox
-
-// Socket setup & pass server
-
-var io = socket(server);
-io.on('connection', (socket) => {
-    console.log('made socket connection ', socket.id);
-
-    //Handle user join (username submission) event
-    socket.on('join', function())
-
-    //Handle user movement event ...
-});
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
