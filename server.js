@@ -1,11 +1,12 @@
 const express = require('express');
+const socket = require('socket.io');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const router = express.Router();
 const app = express();
 
 app.use(session({secret: 'ssshhhhh',saveUninitialized: true,resave: true}));
-app.use(bodyParser.json());      
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + '/views'));
 
@@ -46,8 +47,20 @@ router.get('/logout',(req,res) => {
 
 app.use('/', router);
 
-app.listen(process.env.PORT || 3000,() => {
+var server = app.listen(process.env.PORT || 3000,() => {
     console.log(`App Started on PORT ${process.env.PORT || 3000}`);
 });
 
 //SessionBox
+
+// Socket setup & pass server
+
+var io = socket(server);
+io.on('connection', (socket) => {
+    console.log('made socket connection ', socket.id);
+
+    //Handle user join (username submission) event
+    socket.on('join', function())
+
+    //Handle user movement event ...
+});
