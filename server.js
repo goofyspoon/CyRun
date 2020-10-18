@@ -49,7 +49,12 @@ io.on('connection', socket => {
     }// end else statement
   });
 
-  //Runs when client disconnects
+  // lobby chat -- TODO
+  socket.on('lobbyMessage', (message) => {
+    io.to(user.lobby).emit('message', message);
+  });
+
+  // Runs when client disconnects
   socket.on('disconnect', () => {
     const user = userLeave(socket.id);
 
