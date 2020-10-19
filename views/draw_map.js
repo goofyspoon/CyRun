@@ -1,7 +1,3 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-
 function generateBoard(){
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
@@ -13,6 +9,8 @@ function generateBoard(){
   };
 }
 
+// The eventlistener has beeen moved to the app.js
+/*
 function bindKeyPress(){
   document.addEventListener('keydown', function(event) {
     if (event.keyCode == 37) {
@@ -29,4 +27,4 @@ function bindKeyPress(){
         alert('Down was pressed');
     }
 }, true);
-}
+}*/
