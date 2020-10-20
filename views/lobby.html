@@ -2,35 +2,42 @@
 <head>
 <title>CyRun - Lobby</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
-<script src="draw_map.js"></script>
+<script src="./draw.js"></script>
 <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body>
-  <h2 id="gamelobby"></h2>
+<body style="background-color:#808080">
 
-  <div id="gameContainer"style="text-align:center;">
-    <img id="level" width="216" height="64" src="logo.png">
-    <br><br>
-    <canvas id="canvas" width="550" height="650" style="border:5px solid #FFFF00;"></canvas>
-    <script>generateBoard()</script>
-    <h3>Although there is no game yet, you may press the arrow keys to test user input.</h3>
-  </div>
+  <div class="row">
+    <!-- Left Column -->
+    <div id="chat_container" class="column left">
+      <br><br><br>
+      <h4 style="text-align: center; margin-top: 2px; margin-bottom: 3px;">Chat</h4>
+      <div id="chat" style="margin:0 auto; background-color:#FFFFFF; width: 400px; height: 60%; overflow-y: scroll; border: black 5px solid;"></div>
+      <input type="text" size="50px" placeholder="Type your message" id="chatbox" name="chat"><button type="button" id="send">Send</button>
+    </div>
 
+    <!-- Middle Column -->
+    <div class="column middle" id="gameContainer">
+      <img id="level" width="216" height="64" src="logo.png">
+      <br><br>
+      <canvas id="canvas" width="550" height="650" style=" border:5px solid #FFFF00;"></canvas>
+      <script>generateBoard()</script>
+      <script>initCharacters()</script>
+      <h3>Although there is no game yet, you may press the arrow keys to test user input.</h3>
+    </div>
 
-  <div id="chat_container" style="width: 400px; background-color: lightgrey;">
-    <h4 style="text-align: center; margin-top: 2px; margin-bottom: 3px;">Chat</h4>
-    <div id="chat" style="height: 180px; overflow-y: scroll; border-top: black 1px solid;"></div>
-    <input type="text" size="45px" placeholder="Type your message" id="chatbox" name="chat"><button type="button" id="send">Send</button>
-  </div>
-  <div id="users_lobby">
-    <h4>Users</h4>
-    <ul id="users"></ul>
-    <p id="leave"><a href="index.html">Leave game</a></p>
+    <!-- Right Column -->
+    <div id="users_lobby" class="column right">
+      <br><br><br>
+      <h4>Users</h4>
+      <ul id="users"></ul>
+      <p id="leave"><a href="index.html">Leave game</a></p>
+    </div>
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js" integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w==" crossorigin="anonymous"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="/app.js"></script>
+<script src="./socket.io/socket.io.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>
