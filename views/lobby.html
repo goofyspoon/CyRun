@@ -8,12 +8,13 @@
 </head>
 
 <body style="background-color:#808080">
+<nav class="navbar navbar-light bg-dark">
+  <a class="navbar-brand">
+  <img id="level" width="216" height="64" src="logo.png">
+  </a>
+</nav>
+
 <div class="container-fluid">
-
-  <div class="row">
-    <img id="level" width="216" height="64" src="logo.png">
-  </div>
-
   <div class="row">
     <!-- Left Column -->
     <div class="col-md-4">
@@ -41,11 +42,13 @@
       <canvas id="canvas" width="550" height="650" style=" border:5px solid #FFFF00;"></canvas>
       <script>generateBoard()</script>
       <script>initCharacters()</script>
-      <h3>Although there is no game yet, you may press the arrow keys to test user input.</h3>
     </div>
     
   </div>
 </div>
+<footer class="footer text-center">
+  <h3>Although there is no game yet, you may press the arrow keys to test user input.</h3>
+</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js" integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w==" crossorigin="anonymous"></script>
 <script src="./socket.io/socket.io.js"></script>
 <script src="./app.js"></script>
