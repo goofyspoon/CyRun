@@ -9,15 +9,15 @@
 
 <body style="background-color:#808080">
 <nav class="navbar navbar-light bg-dark">
-  <a class="navbar-brand">
-  <img id="level" width="216" height="64" src="logo.png">
+  <a class="navbar-brand mx-auto">
+  <img id="level" height="32px" src="logo.png">
   </a>
 </nav>
 
 <div class="container-fluid">
   <div class="row">
     <!-- Left Column -->
-    <div class="col-md-4">
+    <div class="col-lg-3">
       <div id="chat_container" >
         <h5 id="gamelobby"></h5>
         <h4>Chat</h4>
@@ -30,24 +30,27 @@
           </div>
         </div>
       </div>
+      
+    </div>
+
+    <!-- Middle Column -->
+    <div class="col-lg-6 text-center" id="gameContainer">
+      <canvas id="canvas" width="550" height="650" style=" border:5px solid #FFFF00;"></canvas>
+      <script>generateBoard()</script>
+      <script>initCharacters()</script>
+    </div>
+    <div class="col-lg-3 bg-light">
       <div id="users_lobby">
         <h4>Users</h4>
         <ul id="users"></ul>
         <p id="leave"><a href="index.html">Leave game</a></p>
       </div>
     </div>
-
-    <!-- Middle Column -->
-    <div class="col-md-8" id="gameContainer">
-      <canvas id="canvas" width="550" height="650" style=" border:5px solid #FFFF00;"></canvas>
-      <script>generateBoard()</script>
-      <script>initCharacters()</script>
-    </div>
     
   </div>
 </div>
-<footer class="footer text-center">
-  <h3>Although there is no game yet, you may press the arrow keys to test user input.</h3>
+<footer class="footer text-center bg-dark">
+  <p class="mb-0" style="color:#FFFF00">Although there is no game yet, you may press the arrow keys to test user input.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js" integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w==" crossorigin="anonymous"></script>
 <script src="./socket.io/socket.io.js"></script>
