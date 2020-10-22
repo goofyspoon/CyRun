@@ -6,13 +6,20 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-  <form action="lobby.html">
-    <label for="username">Username</label><br />
-    <input type="text" size="40" placeholder="Type your username" id="username" name="username" required><br />
-    <label for="room">Game Lobby</label><br />
-    <input type="text" size="40" placeholder="Type the name of the game lobby" id="gamelobby" name="lobby" required></br />
-    <button type="submit" id="submit">Join lobby</button>
-</form>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <form action="lobby.html" class="form-group">
+          <label for="username">Username</label><br />
+          <input class="form-control" type="text" size="40" placeholder="Type your username" id="username" name="username" required><br />
+          <label for="room">Game Lobby</label><br />
+          <input class="form-control" type="text" size="40" placeholder="Type the name of the game lobby" id="gamelobby" name="lobby" required></br />
+          <button type="submit" id="submit" class="btn btn-primary">Join lobby</button>
+      </form>
+      </div>
+    </div>
+  </div>
+  
 
 <script src="/socket.io/socket.io.js"></script>
 </body>
