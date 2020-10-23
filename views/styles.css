@@ -8,29 +8,7 @@
 }
 
 /* Create three unequal columns that floats next to each other */
-.column {
-  float: left;
-  padding: 20px;
-}
 
-.left {
-  width: 33.33%;
-  text-align: center;
-}
-
-.right {
-  width: 33.33%;
-  text-align: left;
-}
-
-.middle {
-  width: 33.33%;
-  text-align: center;
-}
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
+.border-5{
+  border-width:5px !important;
 }

@@ -3,8 +3,8 @@
 <title>CyRun - Lobby</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
 <script src="./draw.js"></script>
-<!-- <link rel="stylesheet" href="styles.css" /> -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="styles.css" />
 </head>
 
 <body style="background-color:#808080">
@@ -18,10 +18,9 @@
   <div class="row">
     <!-- Left Column -->
     <div class="col-lg-3">
-      <div id="chat_container" >
+      <div id="chat_container" class="mt-2" >
         <h5 id="gamelobby"></h5>
-        <h4>Chat</h4>
-        <div id="chat" style="background-color:#FFFFFF; height: 325px; overflow-y: scroll; border: black 5px solid;"></div>
+        <div class="rounded border border-dark bg-light border-5 p-2" id="chat" style=" height: 80%; overflow-y: scroll; max-height: 500px;"></div>
         <div class="input-group mt-1">
           <input type="text" placeholder="Type your message" id="chatbox" name="chat" class="form-control">
           <div classs="input-group-append">
@@ -39,8 +38,10 @@
       <script>generateBoard()</script>
       <script>initCharacters()</script>
     </div>
-    <div class="col-lg-3 bg-light">
-      <div id="users_lobby">
+    <!-- Right Column -->
+    <div class="col-lg-3">
+      <h5 style="height: 24px"> </h5>
+      <div id="users_lobby" class="bg-light mt-2 rounded p-2 border border-dark border-5">
         <h4>Users</h4>
         <ul id="users"></ul>
         <p id="leave"><a href="index.html">Leave game</a></p>
@@ -50,7 +51,7 @@
   </div>
 </div>
 <footer class="footer text-center bg-dark">
-  <p class="mb-0" style="color:#FFFF00">Although there is no game yet, you may press the arrow keys to test user input.</p>
+  <p style="color:#FFFF00">Although there is no game yet, you may press the arrow keys to test user input.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js" integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w==" crossorigin="anonymous"></script>
 <script src="./socket.io/socket.io.js"></script>
