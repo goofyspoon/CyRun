@@ -20,6 +20,17 @@ socket.on('lobbyUsers', ({lobby, users}) => {
   outputUsers(users);
 });
 
+// Load board
+socket.on('loadBoard', () => {
+  drawBoard();
+});
+
+// Draw in characters and start timer for game
+socket.on('startGame', (users) => {
+  drawCharacters(users);
+  startGame();
+});
+
 // Messages from Server
 socket.on('message', message => {
   const p = document.createElement('p');
@@ -56,19 +67,61 @@ function outputUsers(users) {
   });
 }
 
+function startGame(){
+  var timer = setInterval(updateBoard,100);
+}
 
-  document.addEventListener('keydown', function(event) {
-    if (event.keyCode == 37) {
-      // here we can emit some emit('movement') that passes in the direction as parameter. Server will catch and so on...
-        alert('Left was pressed');
-    }
-    else if (event.keyCode == 38) {
-        alert('Up was pressed');
-    }
-    else if (event.keyCode == 39) {
-        alert('Right was pressed');
-    }
-    else if (event.keyCode == 40) {
-        alert('Down was pressed');
-    }
+function updateBoard(){
+  //calculate new positions
+  //clear canvas
+  //redraw board
+  //redraw characters
+}
+
+function drawBoard(){
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  var img1 = new Image();
+  img1.src = './PacmanLevel.png';
+  img1.onload = function () {
+      //draw background image
+      ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
+  };
+}
+
+function drawCharacters(users){
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  var characters = ["red_ghost", "blue_ghost", "orange_ghost", "pacman"];
+  let i = 0;
+  let user = users[0];
+
+  users.forEach(user => {
+    drawCharacter(user.xCoord, user.yCoord, canvas, ctx, characters[i++]);
+  });
+}
+
+function drawCharacter(xCoord, yCoord, canvas, context, name){
+  var image = new Image();
+  var path = './' + name + '.png';
+  image.src = path;
+  image.onload = function () {
+      //draw background image
+      context.drawImage(image, xCoord, yCoord, 35, 35);
+  };
+}
+
+this.document.addEventListener('keydown', function(event) {
+  if (event.keyCode == 37) {
+    socket.emit('changeDirection', ('left'));
+  }
+  else if (event.keyCode == 38) {
+    socket.emit('changeDirection', ('up'));
+  }
+  else if (event.keyCode == 39) {
+    socket.emit('changeDirection', ('right'));
+  }
+  else if (event.keyCode == 40) {
+    socket.emit('changeDirection', ('down'));
+  }
 }, true);

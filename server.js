@@ -6,13 +6,19 @@ const {
   userJoin,
   getCurrentUser,
   userLeave,
-  getLobbyUsers
+  getLobbyUsers,
+  setPlayerNum,
+  setCoords,
+  setDirection
 } = require('./utils/users');
+
 
 const app = express();
 const server = http.createServer(app);
 const io = socket(server);
 const PORT = 3000 || process.anv.PORT;
+const CANVAS_HEIGHT = 650;
+const CANVAS_WIDTH = 550;
 
 app.use(express.static('views')); // Set static folder to /views
 
@@ -46,6 +52,30 @@ io.on('connection', socket => {
         lobby: user.lobby,
         users: getLobbyUsers(user.lobby)
       });
+
+      socket.emit('loadBoard');
+
+      if(getLobbyUsers(user.lobby).length == 4){
+        let users = getLobbyUsers(user.lobby);
+        for(let i = 0; i < 4; i++){
+          setPlayerNum(users[i].id, i + 1);
+          setDirection(users[i].id, 0, 0);
+
+          //First player will start at left ghost spot
+          if(i + 1 == 1)
+            setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
+          //Second player will start at middle ghost spot
+          else if(i + 1 == 2)
+            setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
+          //Third player will start at right ghost spot
+          else if(i + 1 == 3)
+            setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
+          //Last player will be pacman
+          else
+            setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
+        }
+        io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
+      }
     }// end else statement
   });
 
@@ -69,6 +99,19 @@ io.on('connection', socket => {
         users: getLobbyUsers(user.lobby)
       });
     }
+  });
+
+  // Adjusts the direction for a player
+  socket.on('changeDirection', (direction) => {
+    const user = getCurrentUser(socket.id);
+    if(direction === 'up')
+      setDirection(user.id, 0, -1);
+    else if(direction === 'down')
+      setDirection(user.id, 0, 1);
+    else if(direction === 'left')
+      setDirection(user.id, -1, 0);
+    else if(direction === 'right')
+      setDirection(user.id, 1, 0);
   });
 });
 
