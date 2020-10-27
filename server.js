@@ -112,6 +112,12 @@ io.on('connection', socket => {
       setDirection(user.id, -1, 0);
     else if(direction === 'right')
       setDirection(user.id, 1, 0);
+    // CHRISTIAN - working on right now:
+    // gameUpdate is sent to all users in lobby and their gameboard will update with a player's new position
+    io.to(user.lobby).emit('gameUpdate', {
+      lobby: user.lobby,
+      users: getLobbyUsers(user.lobby)
+    });
   });
 });
 

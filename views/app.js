@@ -39,6 +39,11 @@ socket.on('message', message => {
   chat.scrollTop = chat.scrollHeight; // automatically scroll to bottom of chat messages
 });
 
+// gameUpdates from server (i.e. player position change)
+socket.on('gameUpdate', ({lobby, users}) => {
+  // TODO !!!!!!
+})
+
 // Send message
 sendChat.addEventListener('click', (e) => {
   e.preventDefault();
