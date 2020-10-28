@@ -41,7 +41,6 @@ socket.on('message', message => {
 
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users}) => {
-  // TODO
 	updateBoard(users);
 })
 
@@ -78,22 +77,14 @@ function startGame(){
 }
 
 function updateBoard(users){
-  //calculate new positions
-	users.forEach(user => {
-		console.log('user role: ' + user.playerRole);
-	});
-  //clear canvas
-	//const canvas = document.getElementById("canvas").getContext('2d');
-	//canvas.clearRect(0, 0, canvas.width, canvas.height);
+  
   //redraw board
+	drawBoard();
   //redraw characters
-	console.log("updateBoard() has been called");
-	drawCharacters(users);
-	
+    drawCharacters(users);
 }
 
 function drawBoard(){
-	console.log("drawBoard() has been called");
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
   var img1 = new Image();

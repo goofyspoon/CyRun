@@ -103,15 +103,12 @@ io.on('connection', socket => {
     else if(direction === 'right')
       setDirection(user.id, 1, 0);
 	
+	// Calculate new position for user
 	let newX = user.xCoord + user.xDirection;
 	let newY = user.yCoord + user.yDirection;
 	setCoords(user.id, newX, newY);
 	
-	// Development Purposes only. Delete this
-	socket.emit('message', 'coordinates of ' + user.username + ': (' + user.xCoord + ', ' + user.yCoord + ')');
-	
-    // CHRISTIAN - working on right now:
-    // gameUpdate is sent to all users in lobby and their gameboard will update with a player's new position
+    // emit the players new position to everyone in the lobby
     io.to(user.lobby).emit('gameUpdate', {
       lobby: user.lobby,
       users: getLobbyUsers(user.lobby)
