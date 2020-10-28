@@ -28,6 +28,7 @@ socket.on('loadBoard', () => {
 // Draw in characters and start timer for game
 socket.on('startGame', (users) => {
   drawCharacters(users);
+  appendRoles(users);
   startGame();
 });
 
@@ -52,6 +53,22 @@ sendChat.addEventListener('click', (e) => {
 // Add lobby name to page
 function outputLobbyName(lobby) {
   lobbyName.innerText = "Lobby " + lobby;
+}
+
+function appendRoles(users){
+   var descendants = userList.getElementsByTagName('li');
+   if ( descendants.length > 0){
+     for(let i = 0; i < descendants.length; i ++){
+       if(users[i].playerRole == 1)
+          descendants[i].textContent += ' - Red Ghost';
+       else if(users[i].playerRole == 2)
+          descendants[i].textContent += ' - Blue Ghost';
+       else if(users[i].playerRole == 3)
+          descendants[i].textContent += ' - Orange Ghost';
+       else if(users[i].playerRole == 4)
+          descendants[i].textContent += ' - PacMan';
+     }
+   }
 }
 
 // Add users list to lobby page
