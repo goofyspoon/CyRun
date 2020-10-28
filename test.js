@@ -1,7 +1,64 @@
-var webdriver = require('selenium-webdriver');
-var monitor = {width: 1920, height : 1200};
-var host = "http://localhost:8000/";
-var browser = new webdriver.Builder().withCapabilities(webdriver.Capabilities.chrome()).build();
-browser.manage().window().setPosition(0, 0);
-browser.manage().window().setSize(monitor.width / 2, monitor.height);
-browser.get(host);
+var io = require('socket.io-client'),
+    assert = require('assert'),
+    expect = require('chai').expect,
+    serverJs = require('./server.js');
+
+describe('Socketio tests', function() {
+
+    var socket;
+
+    beforeEach(function(done) {
+        // Setup
+        document.body.innerHTML = '<form action="lobby.html">' +
+        ' <input class="form-control" type="text" size="40" placeholder="Type your username" id="username" name="username" required><br />' +
+        '<input class="form-control" type="text" size="40" placeholder="Type the name of the game lobby" id="gamelobby" name="lobby" required></br /> ' +
+        '<button type="submit" id="submit" class="btn btn-primary">Join lobby</button>' +
+        '</form>';
+        socket = io.connect('http://localhost:3000', {
+            'reconnection delay' : 0,
+            'reopen delay' : 0,
+            'force new connection' : true
+        });
+        socket.on('connect', function() {
+            console.log('socket connected');
+            done();
+        });
+        socket.on('disconnect', function() {
+            console.log('socket disconnected');
+        })
+    });
+
+    afterEach(function(done) {
+        // Cleanup
+        if(socket.connected) {
+            console.log('disconnecting...');
+            socket.disconnect();
+        } else {
+            // There will not be a connection unless you have done() in beforeEach, socket.on('connect'...)
+            console.log('no connection to break...');
+        }
+        done();
+    });
+
+    describe('Testing user entrance (joining a lobby)', function() {
+
+        it('Testing username input', function(done) {
+           var test = false;
+            document.getElementById('username').value = 'test Username';
+            if (document.getElementById('username').value === 'test Username') {
+              test = true;
+            }
+            expect(test).to.be.true
+            done();
+        });
+
+        it('Testing lobby name input', function(done)  {
+          var test = false;
+          document.getElementById('gamelobby').value = 'test lobby';
+          if (document.getElementById('gamelobby').value === 'test lobby') test = true;
+          expect(test).to.be.true;
+          done();
+        });
+    });
+
+});

@@ -14,9 +14,12 @@
     "redis": "^3.0.2",
     "socket.io": "^2.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "jest": "^26.6.1"
+  },
   "scripts": {
-    "test": "nodemon test.js",
+    "test": "jest test.js",
     "start": "nodemon server.js"
   },
   "repository": {
