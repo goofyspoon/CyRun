@@ -91,7 +91,7 @@ io.on('connection', socket => {
     io.to(user.lobby).emit('message', username + ': ' + message);
   });
 
-  // Adjusts the direction for a player and determines their new position
+  // Adjusts the direction for a player
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
     if (direction === 'up')
@@ -104,8 +104,8 @@ io.on('connection', socket => {
       setDirection(user.id, 1, 0);
 	
 	// Calculate new position for user
-	let newX = user.xCoord + user.xDirection;
-	let newY = user.yCoord + user.yDirection;
+	var newX = user.xCoord + user.xDirection;
+	var newY = user.yCoord + user.yDirection;
 	setCoords(user.id, newX, newY);
 	
     // emit the players new position to everyone in the lobby

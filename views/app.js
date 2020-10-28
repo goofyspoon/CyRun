@@ -77,7 +77,6 @@ function startGame(){
 }
 
 function updateBoard(users){
-  
   //redraw board
 	drawBoard();
   //redraw characters
