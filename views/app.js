@@ -77,10 +77,8 @@ function startGame(){
 }
 
 function updateBoard(users){
-  //redraw board
-	drawBoard();
-  //redraw characters
-    drawCharacters(users);
+	drawBoard(); // redraw board
+  drawCharacters(users); // redraw characters
 }
 
 function drawBoard(){
@@ -98,10 +96,8 @@ function drawCharacters(users){
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
   var characters = ["red_ghost", "blue_ghost", "orange_ghost", "pacman"];
-  let i = 0;
-  // What's the point in the line below this?
-  //let user = users[0];
 
+  let i = 0;
   users.forEach(user => {
     drawCharacter(user.xCoord, user.yCoord, canvas, ctx, characters[i++]);
   });
