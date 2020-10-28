@@ -55,6 +55,13 @@ sendChat.addEventListener('click', (e) => {
   }
 });
 
+// Send message if user hits 'enter' key
+document.addEventListener('keydown', function(event)	{
+	if(event.keyCode == 13)	{
+		sendChat.click();
+	}
+}, true);
+
 // Add lobby name to page
 function outputLobbyName(lobby) {
   lobbyName.innerText = "Lobby " + lobby;
