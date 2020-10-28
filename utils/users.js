@@ -2,7 +2,7 @@ const users = [];
 
 //Join user
 function userJoin(id, username, lobby)  {
-  const user = {id,
+  var user = {id,
                 username,
                 lobby,
                 playerRole : -1,
@@ -16,7 +16,7 @@ function userJoin(id, username, lobby)  {
   return user;
 }
 
-// Get current user
+// Get current user (from id)
 function getCurrentUser(id) {
   return users.find(user => user.id === id);
 }
@@ -63,6 +63,7 @@ module.exports = {
   getCurrentUser,
   userLeave,
   getLobbyUsers,
+  getCoords,
   setPlayerNum,
   setCoords,
   setDirection

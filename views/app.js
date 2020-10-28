@@ -41,7 +41,8 @@ socket.on('message', message => {
 
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users}) => {
-  // TODO !!!!!!
+  // TODO
+	updateBoard(users);
 })
 
 // Send message
@@ -76,14 +77,23 @@ function startGame(){
   var timer = setInterval(updateBoard,100);
 }
 
-function updateBoard(){
+function updateBoard(users){
   //calculate new positions
+	users.forEach(user => {
+		console.log('user role: ' + user.playerRole);
+	});
   //clear canvas
+	//const canvas = document.getElementById("canvas").getContext('2d');
+	//canvas.clearRect(0, 0, canvas.width, canvas.height);
   //redraw board
   //redraw characters
+	console.log("updateBoard() has been called");
+	drawCharacters(users);
+	
 }
 
 function drawBoard(){
+	console.log("drawBoard() has been called");
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
   var img1 = new Image();
@@ -99,7 +109,8 @@ function drawCharacters(users){
   var ctx = canvas.getContext("2d");
   var characters = ["red_ghost", "blue_ghost", "orange_ghost", "pacman"];
   let i = 0;
-  let user = users[0];
+  // What's the point in the line below this?
+  //let user = users[0];
 
   users.forEach(user => {
     drawCharacter(user.xCoord, user.yCoord, canvas, ctx, characters[i++]);

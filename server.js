@@ -5,6 +5,7 @@ const socket = require('socket.io');
 const {
   userJoin,
   getCurrentUser,
+  getCoords,
   userLeave,
   getLobbyUsers,
   setPlayerNum,
@@ -26,17 +27,21 @@ app.use(express.static('views')); // Set static folder to /views
 io.on('connection', socket => {
   console.log('New socket connection', socket.id); // Development purposes only. Delete this.
   socket.on('joinLobby', ({username, lobby}) => {
-    // Check the lobby to ensure there will not be two users with the same name.
-    var usernameExists = false;
+    // Check the lobby to ensure there will not be two users with the same name or there are already 4 users in the lobby
+    var entranceFailure = false;
     let usersInLobby = getLobbyUsers(lobby);
-    for (var i = 0; i < usersInLobby.length; i++) {
+	if (usersInLobby.length >= 4)	{
+		socket.emit('message', 'The lobby, ' + lobby + ', is full')
+		entranceFailure = true;
+	}
+    for (var i = 0; i < usersInLobby.length && !(entranceFailure); i++) {
       if (usersInLobby[i].username === username) {
         socket.emit('message', 'There already exists a user in lobby: \"' + lobby + '\" with the name: \"' + username + '\"');
-        usernameExists = true;
+        entranceFailure = true;
         break;
       }
     }
-    if (usernameExists) socket.disconnect();
+    if (entranceFailure) socket.disconnect();
     else {
       const user = userJoin(socket.id, username, lobby);
       socket.join(user.lobby);
@@ -86,6 +91,33 @@ io.on('connection', socket => {
     io.to(user.lobby).emit('message', username + ': ' + message);
   });
 
+  // Adjusts the direction for a player and determines their new position
+  socket.on('changeDirection', (direction) => {
+    const user = getCurrentUser(socket.id);
+    if (direction === 'up')
+      setDirection(user.id, 0, -1);
+    else if(direction === 'down')
+      setDirection(user.id, 0, 1);
+    else if(direction === 'left')
+      setDirection(user.id, -1, 0);
+    else if(direction === 'right')
+      setDirection(user.id, 1, 0);
+	
+	let newX = user.xCoord + user.xDirection;
+	let newY = user.yCoord + user.yDirection;
+	setCoords(user.id, newX, newY);
+	
+	// Development Purposes only. Delete this
+	socket.emit('message', 'coordinates of ' + user.username + ': (' + user.xCoord + ', ' + user.yCoord + ')');
+	
+    // CHRISTIAN - working on right now:
+    // gameUpdate is sent to all users in lobby and their gameboard will update with a player's new position
+    io.to(user.lobby).emit('gameUpdate', {
+      lobby: user.lobby,
+      users: getLobbyUsers(user.lobby)
+    });
+  });
+
   // Runs when client disconnects
   socket.on('disconnect', () => {
     const user = userLeave(socket.id);
@@ -100,25 +132,7 @@ io.on('connection', socket => {
       });
     }
   });
-
-  // Adjusts the direction for a player
-  socket.on('changeDirection', (direction) => {
-    const user = getCurrentUser(socket.id);
-    if(direction === 'up')
-      setDirection(user.id, 0, -1);
-    else if(direction === 'down')
-      setDirection(user.id, 0, 1);
-    else if(direction === 'left')
-      setDirection(user.id, -1, 0);
-    else if(direction === 'right')
-      setDirection(user.id, 1, 0);
-    // CHRISTIAN - working on right now:
-    // gameUpdate is sent to all users in lobby and their gameboard will update with a player's new position
-    io.to(user.lobby).emit('gameUpdate', {
-      lobby: user.lobby,
-      users: getLobbyUsers(user.lobby)
-    });
-  });
+  // Do not put anything below the socket disconnect!
 });
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
