@@ -40,6 +40,11 @@ socket.on('message', message => {
   chat.scrollTop = chat.scrollHeight; // automatically scroll to bottom of chat messages
 });
 
+// gameUpdates from server (i.e. player position change)
+socket.on('gameUpdate', ({lobby, users}) => {
+	updateBoard(users);
+})
+
 // Send message
 sendChat.addEventListener('click', (e) => {
   e.preventDefault();
@@ -88,11 +93,9 @@ function startGame(){
   var timer = setInterval(updateBoard,100);
 }
 
-function updateBoard(){
-  //calculate new positions
-  //clear canvas
-  //redraw board
-  //redraw characters
+function updateBoard(users){
+	drawBoard(); // redraw board
+  drawCharacters(users); // redraw characters
 }
 
 function drawBoard(){
@@ -110,9 +113,8 @@ function drawCharacters(users){
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
   var characters = ["red_ghost", "blue_ghost", "orange_ghost", "pacman"];
-  let i = 0;
-  let user = users[0];
 
+  let i = 0;
   users.forEach(user => {
     drawCharacter(user.xCoord, user.yCoord, canvas, ctx, characters[i++]);
   });
