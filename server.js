@@ -102,12 +102,12 @@ io.on('connection', socket => {
       setDirection(user.id, -1, 0);
     else if(direction === 'right')
       setDirection(user.id, 1, 0);
-	
+
 	// Calculate new position for user
 	var newX = user.xCoord + user.xDirection;
 	var newY = user.yCoord + user.yDirection;
 	setCoords(user.id, newX, newY);
-	
+
     // emit the players new position to everyone in the lobby
     io.to(user.lobby).emit('gameUpdate', {
       lobby: user.lobby,
@@ -128,8 +128,7 @@ io.on('connection', socket => {
         users: getLobbyUsers(user.lobby)
       });
     }
-  });
-  // Do not put anything below the socket disconnect!
+  });// Do not put anything below socket.on(disconnect)
 });
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
