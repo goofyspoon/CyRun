@@ -2,6 +2,7 @@
 const http = require('http');
 const express = require('express');
 const socket = require('socket.io');
+const LEVEL1 = require('./Constants.js');
 const {
   userJoin,
   getCurrentUser,
@@ -10,8 +11,13 @@ const {
   getLobbyUsers,
   setPlayerNum,
   setCoords,
-  setDirection
+  setDirection,
+  setDotCount
 } = require('./utils/users');
+const { create } = require('hbs');
+
+var gameBoard = new Array(LEVEL1.length);
+var dotCount;
 
 
 const app = express();
@@ -31,6 +37,7 @@ io.on('connection', socket => {
     var entranceFailure = false;
     let usersInLobby = getLobbyUsers(lobby);
 	if (usersInLobby.length >= 4)	{
+    console.log("Rejected player because lobby is full.");
 		socket.emit('message', 'The lobby, ' + lobby + ', is full')
 		entranceFailure = true;
 	}
@@ -38,6 +45,7 @@ io.on('connection', socket => {
       if (usersInLobby[i].username === username) {
         socket.emit('message', 'There already exists a user in lobby: \"' + lobby + '\" with the name: \"' + username + '\"');
         entranceFailure = true;
+        console.log("Rejected player due to repeat of username.");
         break;
       }
     }
@@ -48,6 +56,7 @@ io.on('connection', socket => {
 
       // Welcome current user to lobby
       socket.emit('message', 'Welcome to CyRun lobby ' + user.lobby);
+      console.log("User "+ user.username+ "joined.");
 
       // Broadcast when a user connects
       socket.broadcast.to(user.lobby).emit('message', user.username + ' joined the lobby');
@@ -57,32 +66,60 @@ io.on('connection', socket => {
         lobby: user.lobby,
         users: getLobbyUsers(user.lobby)
       });
+      console.log("Sent users in lobby the user and lobby information from server.");
 
-      socket.emit('loadBoard');
+      //socket.emit('loadBoard');
+      console.log("Asked users to loadbBoard.");
 
       if(getLobbyUsers(user.lobby).length == 4){
+        console.log("There are now four users. Let's get started.");
         let users = getLobbyUsers(user.lobby);
-        for(let i = 0; i < 4; i++){
-          setPlayerNum(users[i].id, i + 1);
-          setDirection(users[i].id, 0, 0);
-
-          //First player will start at left ghost spot
-          if(i + 1 == 1)
-            setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
-          //Second player will start at middle ghost spot
-          else if(i + 1 == 2)
-            setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
-          //Third player will start at right ghost spot
-          else if(i + 1 == 3)
-            setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
-          //Last player will be pacman
-          else
-            setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
-        }
-        io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
+        setRoles(user, users);
       }
     }// end else statement
   });
+
+  function setRoles(user, users){
+        for(let i = 0; i < 4; i++){
+          setPlayerNum(users[i].id, i + 1);
+          setDirection(users[i].id, 0, 0);
+        
+    //First player will start at left ghost spot
+    if(i + 1 == 1){
+      setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
+      console.log("Setting "+users[i].username + " as red ghost.");
+    //Second player will start at middle ghost spot
+    }else if(i + 1 == 2){
+      setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
+      console.log("Setting "+users[i].username + " as blue ghost.");
+    //Third player will start at right ghost spot
+    }else if(i + 1 == 3){
+      setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
+      console.log("Setting "+users[i].username + " as orange ghost.");
+    //Last player will be pacman
+    }else{
+      setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
+      console.log("Setting "+users[i].username + " as pacymany.");
+    }
+  }
+  createGameBoard();
+  io.to(user.lobby).emit('drawGameBoard', (gameBoard));
+    //io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
+    console.log("Emit to users to drawGameBoard, passing gameBoard array.");
+  }
+
+
+  function createGameBoard(){
+    //gameBoard
+    console.log("in createGameBoard.");
+    //gameBoard = LEVEL1;
+    LEVEL1.forEach(element => gameBoard[element] = LEVEL1[element]);
+    console.log("gameBoard[0]=" + gameBoard[0]);
+    console.log("gameBoard[1]="+ gameBoard[1]);
+    console.log("gameBoard[2]="+ gameBoard[2]);
+    //gameBoard.forEach(element => console.log(element));
+
+  }
 
   // Lobby chat
   // lobby chat -- normal message
@@ -90,6 +127,7 @@ io.on('connection', socket => {
     const user = getCurrentUser(socket.id);
     io.to(user.lobby).emit('message', username + ': ' + message);
   });
+
 
   // Adjusts the direction for a player
   socket.on('changeDirection', (direction) => {

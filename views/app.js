@@ -6,10 +6,10 @@ const leaveLobbyBtn = document.getElementById('leave');
 const chat = document.getElementById('chat');
 const chatbox = document.getElementById('chatbox')
 const sendChat = document.getElementById('send');
+const gameGrid = document.getElementById('canvas');
 
 // Get username and lobby from URL
 const {username, lobby} = Qs.parse(location.search, {ignoreQueryPrefix: true});
-
 
 // Join lobby
 socket.emit('joinLobby', {username, lobby});
@@ -24,6 +24,30 @@ socket.on('lobbyUsers', ({lobby, users}) => {
 socket.on('loadBoard', () => {
   drawBoard();
 });
+
+//io.to(user.lobby).emit('drawGameBoard', (gameBoard));
+socket.on('drawGameBoard',(gameBoard) =>{
+  console.log("Received drawGameBoard, creating board.");
+  const board = document.querySelector('#gameContainer');
+  //const board = new this(DOMGrid);
+
+    board.innerHTML = '';
+    // First set correct amount of columns based on Grid Size and Cell Size
+    board.style.cssText = `grid-template-columns: repeat(550, 5px);`;
+
+    gameBoard.forEach((square) => {
+      console.log("Looking at square: "+ square);
+      const div = document.createElement('div');
+      div.classList.add('square', CLASS_LIST[square]);
+      div.style.cssText = `width: ${CELL_SIZE}px; height: ${CELL_SIZE}px;`;
+      board.appendChild(div);
+      board.grid.push(div);
+    });
+});
+
+//io.to(user).emit('sendDOMInfo');
+
+
 
 // Draw in characters and start timer for game
 socket.on('startGame', (users) => {
