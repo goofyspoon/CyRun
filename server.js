@@ -103,7 +103,7 @@ io.on('connection', socket => {
     }
   }
   createGameBoard();
-  io.to(user.lobby).emit('drawGameBoard', (gameBoard));
+  socket.broadcast.to(user.lobby).emit('drawGameBoard', (gameBoard));
     //io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
     console.log("Emit to users to drawGameBoard, passing gameBoard array.");
   }
@@ -112,8 +112,13 @@ io.on('connection', socket => {
   function createGameBoard(){
     //gameBoard
     console.log("in createGameBoard.");
-    //gameBoard = LEVEL1;
-    gameBoard.forEach(element => gameBoard[element] = Constants.LEVEL1[element]);
+    gameBoard = Constants.LEVEL1;
+    //gameBoard.forEach(element => gameBoard[element] = Constants.LEVEL1[element]);
+
+    console.log("LEVEL1[0]=" + Constants.LEVEL1[0]);
+    console.log("LEVEL1[1]="+ Constants.LEVEL1[1]);
+    console.log("LEVEL1[2]="+ Constants.LEVEL1[2]);
+
     console.log("gameBoard[0]=" + gameBoard[0]);
     console.log("gameBoard[1]="+ gameBoard[1]);
     console.log("gameBoard[2]="+ gameBoard[2]);
