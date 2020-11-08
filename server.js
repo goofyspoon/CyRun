@@ -2,7 +2,7 @@
 const http = require('http');
 const express = require('express');
 const socket = require('socket.io');
-const LEVEL1 = require('./Constants.js');
+const Constants = require('./Constants.js');
 const {
   userJoin,
   getCurrentUser,
@@ -16,7 +16,7 @@ const {
 } = require('./utils/users');
 const { create } = require('hbs');
 
-var gameBoard = new Array(LEVEL1.length);
+var gameBoard = new Array(Constants.LEVEL1.length);
 var dotCount;
 
 
@@ -113,7 +113,7 @@ io.on('connection', socket => {
     //gameBoard
     console.log("in createGameBoard.");
     //gameBoard = LEVEL1;
-    LEVEL1.forEach(element => gameBoard[element] = LEVEL1[element]);
+    gameBoard.forEach(element => gameBoard[element] = Constants.LEVEL1[element]);
     console.log("gameBoard[0]=" + gameBoard[0]);
     console.log("gameBoard[1]="+ gameBoard[1]);
     console.log("gameBoard[2]="+ gameBoard[2]);
