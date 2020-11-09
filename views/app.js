@@ -6,7 +6,39 @@ const leaveLobbyBtn = document.getElementById('leave');
 const chat = document.getElementById('chat');
 const chatbox = document.getElementById('chatbox')
 const sendChat = document.getElementById('send');
-const gameGrid = document.getElementById('canvas');
+//const gameGrid = document.getElementById('canvas');
+const gameGrid = document.querySelector('#game');
+
+
+const GRID_SIZE = 20;
+const CELL_SIZE = 20;
+
+const SQUARE_TYPE = {
+  BLANK: 'blank',
+  WALL: 'wall',
+  DOT: 'dot',
+  GHOST1: 'ghost1',
+  GHOST2: 'ghost2',
+  GHOST3: 'ghost3',
+  PILL: 'pill',
+  PACMAN: 'pacman',
+  GHOST: 'ghost',
+  SCARED: 'scared',
+  GHOSTLAIR: 'lair'
+};
+
+// Lookup array for classes
+const SQUARE_LIST = [
+  SQUARE_TYPE.BLANK,
+  SQUARE_TYPE.WALL,
+  SQUARE_TYPE.DOT,
+  SQUARE_TYPE.GHOST1,
+  SQUARE_TYPE.GHOST2,
+  SQUARE_TYPE.GHOST3,
+  SQUARE_TYPE.PILL,
+  SQUARE_TYPE.PACMAN,
+  SQUARE_TYPE.GHOSTLAIR
+];
 
 // Get username and lobby from URL
 const {username, lobby} = Qs.parse(location.search, {ignoreQueryPrefix: true});
@@ -26,27 +58,40 @@ socket.on('loadBoard', () => {
 });
 
 //io.to(user.lobby).emit('drawGameBoard', (gameBoard));
-socket.on('drawGameBoard',(gameBoard) =>{
-  console.log("Received drawGameBoard, creating board.");
-  const board = document.querySelector('#gameContainer');
-  //const board = new this(DOMGrid);
+socket.on('drawGameBoard',({gameBoard}) =>{
+
+  console.log("Received drawGameBoard");
+  drawGameBoard(gameBoard);
+
+});
+
+function drawGameBoard(gameBoard){
+  console.log("Drawing gameBoard");
+
+  const board = document.querySelector('#game');
+  const grid = [];
 
     board.innerHTML = '';
     // First set correct amount of columns based on Grid Size and Cell Size
-    board.style.cssText = `grid-template-columns: repeat(550, 5px);`;
+    board.style.cssText = `grid-template-columns: repeat(${GRID_SIZE}, ${CELL_SIZE}px);`;
 
     gameBoard.forEach((square) => {
-      console.log("Looking at square: "+ square);
       const div = document.createElement('div');
-      div.classList.add('square', CLASS_LIST[square]);
+      div.classList.add('square', SQUARE_LIST[square]);
       div.style.cssText = `width: ${CELL_SIZE}px; height: ${CELL_SIZE}px;`;
       board.appendChild(div);
-      board.grid.push(div);
+      grid.push(div);
     });
+}
+
+//socket.broadcast.to(user.lobby).emit('hey');
+socket.on('hey',({})=>{
+  console.log("HEY!");
 });
 
-//io.to(user).emit('sendDOMInfo');
-
+function rotateDiv(position, degree){
+  this.grid[position].style.transform = `rotate({deg}deg)`;
+}
 
 
 // Draw in characters and start timer for game
@@ -65,8 +110,8 @@ socket.on('message', message => {
 });
 
 // gameUpdates from server (i.e. player position change)
-socket.on('gameUpdate', ({lobby, users}) => {
-	updateBoard(users);
+socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
+	updateBoard(users, gameBoard);
 })
 
 // Send message
@@ -124,11 +169,12 @@ function startGame(){
   var timer = setInterval(updateBoard,100);
 }
 
-function updateBoard(users){
-	drawBoard(); // redraw board
-  drawCharacters(users); // redraw characters
+function updateBoard(users, gameBoard){
+	drawGameBoard(); // redraw board
+  //drawCharacters(users); // redraw characters
 }
 
+/** 
 function drawBoard(){
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
@@ -160,18 +206,22 @@ function drawCharacter(xCoord, yCoord, canvas, context, name){
       context.drawImage(image, xCoord, yCoord, 35, 35);
   };
 }
-
+*/
 this.document.addEventListener('keydown', function(event) {
   if (event.keyCode == 37) {
+    console.log("Pressed left!");
     socket.emit('changeDirection', ('left'));
   }
   else if (event.keyCode == 38) {
+    console.log("Pressed up!");
     socket.emit('changeDirection', ('up'));
   }
   else if (event.keyCode == 39) {
+    console.log("Pressed right!");
     socket.emit('changeDirection', ('right'));
   }
   else if (event.keyCode == 40) {
+    console.log("Pressed down!");
     socket.emit('changeDirection', ('down'));
   }
 }, true);

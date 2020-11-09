@@ -12,12 +12,14 @@ const {
   setPlayerNum,
   setCoords,
   setDirection,
-  setDotCount
+  getIndex,
+  setIndex
 } = require('./utils/users');
 const { create } = require('hbs');
 
 var gameBoard = new Array(Constants.LEVEL1.length);
 var dotCount;
+
 
 
 const app = express();
@@ -51,7 +53,18 @@ io.on('connection', socket => {
     }
     if (entranceFailure) socket.disconnect();
     else {
-      const user = userJoin(socket.id, username, lobby);
+      var startingPos =0;
+          if(usersInLobby.length == 1){
+            startingPos = 109;
+          }else if(usersInLobby.length == 2){
+            startingPos = 110;
+          }else if(usersInLobby.length == 3){
+            startingPos = 111;
+          }else{
+            startingPos = 180;
+          }
+      const user = userJoin(socket.id, username, lobby, startingPos);
+      console.log("Starting position is: " + startingPos);
       socket.join(user.lobby);
 
       // Welcome current user to lobby
@@ -85,15 +98,15 @@ io.on('connection', socket => {
           setDirection(users[i].id, 0, 0);
         
     //First player will start at left ghost spot
-    if(i + 1 == 1){
+    if(i == 0){
       setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
       console.log("Setting "+users[i].username + " as red ghost.");
     //Second player will start at middle ghost spot
-    }else if(i + 1 == 2){
+    }else if(i == 1){
       setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
       console.log("Setting "+users[i].username + " as blue ghost.");
     //Third player will start at right ghost spot
-    }else if(i + 1 == 3){
+    }else if(i == 2){
       setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
       console.log("Setting "+users[i].username + " as orange ghost.");
     //Last player will be pacman
@@ -103,9 +116,14 @@ io.on('connection', socket => {
     }
   }
   createGameBoard();
-  socket.broadcast.to(user.lobby).emit('drawGameBoard', (gameBoard));
+  //socket.broadcast.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
     //io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
+    io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
     console.log("Emit to users to drawGameBoard, passing gameBoard array.");
+
+    //socket.broadcast.to(user.lobby).emit('hey', ({}));
+    io.to(user.lobby).emit('hey', ({}));
+    //gameloop();
   }
 
 
@@ -125,6 +143,19 @@ io.on('connection', socket => {
     //gameBoard.forEach(element => console.log(element));
 
   }
+
+  function addObject(position, object){
+    gameBoard[position].classList.add(...classes);
+  }
+
+  function removeObject(position, object){
+    gameBoard[position].classList.remove(...classes);
+  }
+
+  function objectExist(position, object){
+    return gameBoard[position].classList.contains(object);
+  }
+
 
   // Lobby chat
   // lobby chat -- normal message
@@ -154,7 +185,8 @@ io.on('connection', socket => {
     // emit the players new position to everyone in the lobby
     io.to(user.lobby).emit('gameUpdate', {
       lobby: user.lobby,
-      users: getLobbyUsers(user.lobby)
+      users: getLobbyUsers(user.lobby),
+      gameBoard: gameBoard
     });
   });
 
