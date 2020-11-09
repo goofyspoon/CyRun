@@ -136,6 +136,10 @@ function outputLobbyName(lobby) {
   lobbyName.innerText = "Lobby " + lobby;
 }
 
+socket.on('setRoles', ({users}) => {
+  appendRoles(users);
+});
+
 function appendRoles(users){
    var descendants = userList.getElementsByTagName('li');
    if ( descendants.length > 0){

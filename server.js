@@ -99,22 +99,25 @@ io.on('connection', socket => {
         
     //First player will start at left ghost spot
     if(i == 0){
-      setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
-      console.log("Setting "+users[i].username + " as red ghost.");
-    //Second player will start at middle ghost spot
-    }else if(i == 1){
-      setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
-      console.log("Setting "+users[i].username + " as blue ghost.");
-    //Third player will start at right ghost spot
-    }else if(i == 2){
-      setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
-      console.log("Setting "+users[i].username + " as orange ghost.");
-    //Last player will be pacman
-    }else{
-      setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
-      console.log("Setting "+users[i].username + " as pacymany.");
-    }
+        setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
+        console.log("Setting "+users[i].username + " as red ghost.");
+      //Second player will start at middle ghost spot
+      }else if(i == 1){
+        setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
+        console.log("Setting "+users[i].username + " as blue ghost.");
+      //Third player will start at right ghost spot
+      }else if(i == 2){
+        setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
+        console.log("Setting "+users[i].username + " as orange ghost.");
+      //Last player will be pacman
+      }else{
+        setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
+        console.log("Setting "+users[i].username + " as pacymany.");
+      }
   }
+
+  io.to(user.lobby).emit('setRoles', {users : users});
+
   createGameBoard();
   //socket.broadcast.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
     //io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
