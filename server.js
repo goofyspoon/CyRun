@@ -17,7 +17,7 @@ const {
 } = require('./utils/users');
 const { create } = require('hbs');
 
-var gameBoard = new Array(Constants.LEVEL1.length);
+var gameBoard;
 var dotCount;
 
 const app = express();
@@ -127,9 +127,12 @@ io.on('connection', socket => {
     console.log("in createGameBoard.");
     //Old method for creating gameBoard:
     //gameBoard = Constants.LEVEL1;
+
+    gameBoard = Constants.LEVEL1.slice();
+    /*
     for (var i = 0; i < Constants.LEVEL1.length; i++) {
       gameBoard[i] = Constants.LEVEL1[i];
-    }
+    }*/
 
     //gameBoard.forEach(element => gameBoard[element] = Constants.LEVEL1[element]);
 
@@ -213,16 +216,21 @@ io.on('connection', socket => {
     // Send new Player position to all users
     if (update)  { // Server only emits gameBoard update if player movement was valid
       console.log("new user index:" + getIndex(user.id)); // Development purposes only. DELETE
-      if (getCurrentUser(user.id).playerRole === 0) {
+      console.log("gameboard at new index before update: " + gameBoard[getIndex(user.id)]); // DELETE
+      if (getCurrentUser(user.id).playerRole === 1) {
+        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 3;
       }
-      else if (getCurrentUser(user.id).playerRole === 1) {
+      else if (getCurrentUser(user.id).playerRole === 2) {
+        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 4;
       }
-      else if (getCurrentUser(user.id).playerRole === 2) {
+      else if (getCurrentUser(user.id).playerRole === 3) {
+        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 5;
       }
-      else if (getCurrentUser(user.id).playerRole === 1) {
+      else if (getCurrentUser(user.id).playerRole === 4) {
+        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 7;
       }
       console.log("gameboard after updating index: " + gameBoard[getIndex(user.id)]); // DELETE
