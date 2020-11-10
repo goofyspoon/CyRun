@@ -74,7 +74,7 @@ function drawGameBoard(gameBoard){
     board.innerHTML = '';
     // First set correct amount of columns based on Grid Size and Cell Size
     board.style.cssText = `grid-template-columns: repeat(${GRID_SIZE}, ${CELL_SIZE}px);`;
-
+    console.log(gameBoard);
     gameBoard.forEach((square) => {
       const div = document.createElement('div');
       div.classList.add('square', SQUARE_LIST[square]);
@@ -126,7 +126,7 @@ sendChat.addEventListener('click', (e) => {
 
 // Send message if user hits 'enter' key
 document.addEventListener('keydown', function(event)	{
-	if(event.keyCode == 13)	{
+	if(event.key == "Enter")	{
 		sendChat.click();
 	}
 }, true);
@@ -174,7 +174,7 @@ function startGame(){
 }
 
 function updateBoard(users, gameBoard){
-	drawGameBoard(); // redraw board
+	drawGameBoard(gameBoard); // redraw board
   //drawCharacters(users); // redraw characters
 }
 
@@ -212,19 +212,19 @@ function drawCharacter(xCoord, yCoord, canvas, context, name){
 }
 */
 this.document.addEventListener('keydown', function(event) {
-  if (event.keyCode == 37) {
+  if (event.key == "ArrowLeft") {
     console.log("Pressed left!");
     socket.emit('changeDirection', ('left'));
   }
-  else if (event.keyCode == 38) {
+  else if (event.key == "ArrowUp") {
     console.log("Pressed up!");
     socket.emit('changeDirection', ('up'));
   }
-  else if (event.keyCode == 39) {
+  else if (event.key == "ArrowRight") {
     console.log("Pressed right!");
     socket.emit('changeDirection', ('right'));
   }
-  else if (event.keyCode == 40) {
+  else if (event.key == "ArrowDown") {
     console.log("Pressed down!");
     socket.emit('changeDirection', ('down'));
   }

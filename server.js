@@ -93,9 +93,9 @@ io.on('connection', socket => {
   });
 
   function setRoles(user, users){
-        for(let i = 0; i < 4; i++){
-          setPlayerNum(users[i].id, i + 1);
-          setDirection(users[i].id, 0, 0);
+    for(let i = 0; i < 4; i++){
+      setPlayerNum(users[i].id, i + 1);
+      setDirection(users[i].id, 0, 0);
         
     //First player will start at left ghost spot
     if(i == 0){
@@ -184,7 +184,7 @@ io.on('connection', socket => {
 	var newX = user.xCoord + user.xDirection;
 	var newY = user.yCoord + user.yDirection;
 	setCoords(user.id, newX, newY);
-
+    console.log(gameBoard);
     // emit the players new position to everyone in the lobby
     io.to(user.lobby).emit('gameUpdate', {
       lobby: user.lobby,
