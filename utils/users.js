@@ -1,12 +1,12 @@
 const users = [];
 
 //Join user
-function userJoin(id, username, lobby, index)  {
+function userJoin(id, username, lobby)  {
   var user = {id,
                 username,
                 lobby,
                 playerRole : -1,
-                index
+                index: -1
                 //xCoord : -1,
                 //yCoord : -1,
                 //xDirection : 0,

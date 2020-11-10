@@ -178,39 +178,6 @@ function updateBoard(users, gameBoard){
   //drawCharacters(users); // redraw characters
 }
 
-/** 
-function drawBoard(){
-  var canvas = document.getElementById("canvas");
-  var ctx = canvas.getContext("2d");
-  var img1 = new Image();
-  img1.src = './PacmanLevel.png';
-  img1.onload = function () {
-      //draw background image
-      ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
-  };
-}
-
-function drawCharacters(users){
-  var canvas = document.getElementById("canvas");
-  var ctx = canvas.getContext("2d");
-  var characters = ["red_ghost", "blue_ghost", "orange_ghost", "pacman"];
-
-  let i = 0;
-  users.forEach(user => {
-    drawCharacter(user.xCoord, user.yCoord, canvas, ctx, characters[i++]);
-  });
-}
-
-function drawCharacter(xCoord, yCoord, canvas, context, name){
-  var image = new Image();
-  var path = './' + name + '.png';
-  image.src = path;
-  image.onload = function () {
-      //draw background image
-      context.drawImage(image, xCoord, yCoord, 35, 35);
-  };
-}
-*/
 this.document.addEventListener('keydown', function(event) {
   if (event.key == "ArrowLeft") {
     console.log("Pressed left!");
