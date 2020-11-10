@@ -74,7 +74,7 @@ function drawGameBoard(gameBoard){
     board.innerHTML = '';
     // First set correct amount of columns based on Grid Size and Cell Size
     board.style.cssText = `grid-template-columns: repeat(${GRID_SIZE}, ${CELL_SIZE}px);`;
-    console.log(gameBoard);
+    //console.log(gameBoard); // Development purposes only
     gameBoard.forEach((square) => {
       const div = document.createElement('div');
       div.classList.add('square', SQUARE_LIST[square]);

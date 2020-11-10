@@ -53,18 +53,9 @@ io.on('connection', socket => {
     }
     if (entranceFailure) socket.disconnect();
     else {
-      // var startingPos =0;
-      //     if(usersInLobby.length == 1){
-      //       startingPos = 109;
-      //     }else if(usersInLobby.length == 2){
-      //       startingPos = 110;
-      //     }else if(usersInLobby.length == 3){
-      //       startingPos = 111;
-      //     }else{
-      //       startingPos = 180;
-      //     }
+
       const user = userJoin(socket.id, username, lobby);
-      console.log("Starting position is: " + startingPos);
+      //console.log("Starting position is: " + startingPos);
       socket.join(user.lobby);
 
       // Welcome current user to lobby
@@ -96,7 +87,7 @@ io.on('connection', socket => {
     for(let i = 0; i < 4; i++){
       setPlayerNum(users[i].id, i + 1);
       setDirection(users[i].id, 0, 0);
-        
+
     //First player will start at left ghost spot
     if(i == 0){
         setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
@@ -171,6 +162,42 @@ io.on('connection', socket => {
   // Adjusts the direction for a player
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
+    if (direction === 'up') {
+      if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
+        if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
+          setIndex(user.id, getIndex(user.id) - 20);
+        }
+      }
+    }
+    else if(direction === 'down') {
+      if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
+        if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
+          setIndex(user.id, getIndex(user.id) + 20);
+        }
+      }
+    }
+    else if(direction === 'left') {
+      if ((getIndex(user.id) % 20) != 0)  { // Check that user is not in the leftmost column (leftmost columns are at indices: 0, 20, 40, ...)
+        if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
+          setIndex(user.id, getIndex(user.id) - 1);
+        }
+      }
+    }
+    else if(direction === 'right')  {
+      if ((getIndex(user.id) % 19) != 0)  { // Check that user is not in the rightmost column (rightmost columns are at indices: 19, 38, 57, ...)
+        if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
+          setIndex(user.id, getIndex(user.id) - 1);
+        }
+      }
+    }
+
+    //TODO: emit gameboard update (update gameboard to all users after player moved)
+
+
+
+
+    // player movement for old gameboard (not array-based):
+    /*const user = getCurrentUser(socket.id);
     if (direction === 'up')
       setDirection(user.id, 0, -1);
     else if(direction === 'down')
@@ -184,13 +211,13 @@ io.on('connection', socket => {
 	var newX = user.xCoord + user.xDirection;
 	var newY = user.yCoord + user.yDirection;
 	setCoords(user.id, newX, newY);
-    console.log(gameBoard);
+    //console.log(gameBoard); // Development purposes only
     // emit the players new position to everyone in the lobby
     io.to(user.lobby).emit('gameUpdate', {
       lobby: user.lobby,
       users: getLobbyUsers(user.lobby),
       gameBoard: gameBoard
-    });
+    });*/
   });
 
   // Runs when client disconnects
