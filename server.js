@@ -53,17 +53,17 @@ io.on('connection', socket => {
     }
     if (entranceFailure) socket.disconnect();
     else {
-      var startingPos =0;
-          if(usersInLobby.length == 1){
-            startingPos = 109;
-          }else if(usersInLobby.length == 2){
-            startingPos = 110;
-          }else if(usersInLobby.length == 3){
-            startingPos = 111;
-          }else{
-            startingPos = 180;
-          }
-      const user = userJoin(socket.id, username, lobby, startingPos);
+      // var startingPos =0;
+      //     if(usersInLobby.length == 1){
+      //       startingPos = 109;
+      //     }else if(usersInLobby.length == 2){
+      //       startingPos = 110;
+      //     }else if(usersInLobby.length == 3){
+      //       startingPos = 111;
+      //     }else{
+      //       startingPos = 180;
+      //     }
+      const user = userJoin(socket.id, username, lobby);
       console.log("Starting position is: " + startingPos);
       socket.join(user.lobby);
 
