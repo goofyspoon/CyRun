@@ -1,15 +1,17 @@
 const users = [];
 
 //Join user
-function userJoin(id, username, lobby)  {
+function userJoin(id, username, lobby, index)  {
   var user = {id,
                 username,
                 lobby,
                 playerRole : -1,
-                xCoord : -1,
-                yCoord : -1,
-                xDirection : 0,
-                yDirection : 0};
+                index
+                //xCoord : -1,
+                //yCoord : -1,
+                //xDirection : 0,
+                //yDirection : 0
+              };
 
   users.push(user);
 
@@ -41,6 +43,17 @@ function getCoords(id){
           yCoord};
 }
 
+function getIndex(id){
+  let users = users.filter(user => user.id === id);
+  return {xCoord,
+          yCoord};
+}
+
+function setIndex(id, i){
+  let index = users.findIndex(user => user.id === id);
+  users[index].index = i;
+}
+
 function setPlayerNum(id, number){
   let index = users.findIndex(user => user.id === id);
   users[index].playerRole = number;
@@ -66,5 +79,7 @@ module.exports = {
   getCoords,
   setPlayerNum,
   setCoords,
-  setDirection
+  setDirection,
+  getIndex,
+  setIndex
 };
