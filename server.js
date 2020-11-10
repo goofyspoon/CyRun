@@ -88,7 +88,7 @@ io.on('connection', socket => {
     //First player will start at left ghost spot
     if (i == 0) {
         //setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
-        setIndex(users[i].id, 230);
+        setIndex(users[i].id, 229);
         console.log("Setting " + users[i].username + " as red ghost.");
       //Second player will start at middle ghost spot
       } else if (i == 1)  {
@@ -103,7 +103,7 @@ io.on('connection', socket => {
       //Last player will be pacman
       } else  {
         //setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
-        setIndex(users[i].id, 311);
+        setIndex(users[i].id, 290);
         console.log("Setting " + users[i].username + " as pacman.");
       }
   }
@@ -171,43 +171,37 @@ io.on('connection', socket => {
   // Adjusts the direction for a player
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
+    const prevIndex = getIndex(user.id);
     var update = false;
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
-          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
-          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) - 20);
           update = true;
         }
       }
     }
-    else if(direction === 'down') {
+    else if (direction === 'down') {
       if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
         if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
-          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
-          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) + 20);
           update = true;
         }
       }
     }
-    else if(direction === 'left') {
-      if ((getIndex(user.id) % 20) != 0)  { // Check that user is not in the leftmost column (leftmost columns are at indices: 0, 20, 40, ...)
+    else if (direction === 'left') {
+      if ((getIndex(user.id) % 20) != 1)  { // Check that user is not in the leftmost column (leftmost columns are at indices: 0, 20, 40, ...)
         if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
-          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
-          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) - 1);
           update = true;
         }
       }
     }
-    else if(direction === 'right')  {
-      if ((getIndex(user.id) % 19) != 0)  { // Check that user is not in the rightmost column (rightmost columns are at indices: 19, 38, 57, ...)
+    else if (direction === 'right')  {
+      console.log('in "right" keypress');
+      if ((getIndex(user.id) % 19) != 1)  { // Check that user is not in the rightmost column (rightmost columns are at indices: 19, 38, 57, ...)
         if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
-          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
-          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
-          setIndex(user.id, getIndex(user.id) - 1);
+          setIndex(user.id, getIndex(user.id) + 1);
           update = true;
         }
       }
@@ -215,27 +209,19 @@ io.on('connection', socket => {
 
     // Send new Player position to all users
     if (update)  { // Server only emits gameBoard update if player movement was valid
-      console.log("new user index:" + getIndex(user.id)); // Development purposes only. DELETE
-      console.log("gameboard at new index before update: " + gameBoard[getIndex(user.id)]); // DELETE
+      gameBoard[prevIndex] = 0; // Set previous position to blank
       if (getCurrentUser(user.id).playerRole === 1) {
-        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 3;
       }
       else if (getCurrentUser(user.id).playerRole === 2) {
-        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 4;
       }
       else if (getCurrentUser(user.id).playerRole === 3) {
-        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 5;
       }
       else if (getCurrentUser(user.id).playerRole === 4) {
-        console.log("in playerRole");
         gameBoard[getIndex(user.id)] = 7;
       }
-      console.log("gameboard after updating index: " + gameBoard[getIndex(user.id)]); // DELETE
-
-      console.log(user.username + ' moved ' + direction + ' index: ' + getIndex(user.id)); // Development purposes only. Delete this
       io.to(user.lobby).emit('gameUpdate', {
         Lobby: user.lobby,
         users: getLobbyUsers(user.lobby),
