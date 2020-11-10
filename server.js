@@ -89,21 +89,25 @@ io.on('connection', socket => {
       setDirection(users[i].id, 0, 0);
 
     //First player will start at left ghost spot
-    if(i == 0){
-        setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
-        console.log("Setting "+users[i].username + " as red ghost.");
+    if (i == 0) {
+        //setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
+        setIndex(users[i].id, 249);
+        console.log("Setting " + users[i].username + " as red ghost.");
       //Second player will start at middle ghost spot
-      }else if(i == 1){
-        setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
-        console.log("Setting "+users[i].username + " as blue ghost.");
+      } else if (i == 1)  {
+        //setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
+        setIndex(users[i].id, 250);
+        console.log("Setting " + users[i].username + " as blue ghost.");
       //Third player will start at right ghost spot
-      }else if(i == 2){
-        setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
-        console.log("Setting "+users[i].username + " as orange ghost.");
+      } else if (i == 2)  {
+        //setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
+        setIndex(users[i].id, 251);
+        console.log("Setting " + users[i].username + " as orange ghost.");
       //Last player will be pacman
-      }else{
-        setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
-        console.log("Setting "+users[i].username + " as pacymany.");
+      } else  {
+        //setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
+        setIndex(users[i].id, 311);
+        console.log("Setting " + users[i].username + " as pacman.");
       }
   }
 
@@ -162,10 +166,12 @@ io.on('connection', socket => {
   // Adjusts the direction for a player
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
+    var update = false;
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
           setIndex(user.id, getIndex(user.id) - 20);
+          update = true;
         }
       }
     }
@@ -173,6 +179,7 @@ io.on('connection', socket => {
       if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
         if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
           setIndex(user.id, getIndex(user.id) + 20);
+          update = true;
         }
       }
     }
@@ -180,6 +187,7 @@ io.on('connection', socket => {
       if ((getIndex(user.id) % 20) != 0)  { // Check that user is not in the leftmost column (leftmost columns are at indices: 0, 20, 40, ...)
         if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
           setIndex(user.id, getIndex(user.id) - 1);
+          update = true;
         }
       }
     }
@@ -187,16 +195,21 @@ io.on('connection', socket => {
       if ((getIndex(user.id) % 19) != 0)  { // Check that user is not in the rightmost column (rightmost columns are at indices: 19, 38, 57, ...)
         if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
           setIndex(user.id, getIndex(user.id) - 1);
+          update = true;
         }
       }
     }
+    // Send new Player position to all users
+    if (update)  { // Server only emits gameBoard update if player movement was valid
+      console.log(user.username + ' moved ' + direction + ' index: ' + getIndex(user.id));
+      io.to(user.lobby).emit('gameUpdate', {
+        Lobby: user.lobby,
+        users: getLobbyUsers(user.lobby),
+        gameBoard: gameBoard
+      });
+    }
 
-    //TODO: emit gameboard update (update gameboard to all users after player moved)
-
-
-
-
-    // player movement for old gameboard (not array-based):
+    // OLD: player movement for old gameboard (not array-based):
     /*const user = getCurrentUser(socket.id);
     if (direction === 'up')
       setDirection(user.id, 0, -1);

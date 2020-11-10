@@ -43,10 +43,13 @@ function getCoords(id){
           yCoord};
 }
 
-function getIndex(id){
+/*function getIndex(id){
   let users = users.filter(user => user.id === id);
   return {xCoord,
           yCoord};
+}*/
+function getIndex(id) {
+  return getCurrentUser(id).index;
 }
 
 function setIndex(id, i){

@@ -93,7 +93,6 @@ function rotateDiv(position, degree){
   this.grid[position].style.transform = `rotate({deg}deg)`;
 }
 
-
 // Draw in characters and start timer for game
 socket.on('startGame', (users) => {
   drawCharacters(users);
@@ -111,8 +110,10 @@ socket.on('message', message => {
 
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
-	updateBoard(users, gameBoard);
-})
+  drawGameBoard(gameBoard);
+  //TODO?? might need a drawCharacters function. Don't know what happened to old version :(
+	//updateBoard(users, gameBoard); // Pre Array-based gameboard version
+});
 
 // Send message
 sendChat.addEventListener('click', (e) => {
