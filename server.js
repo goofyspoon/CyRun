@@ -20,8 +20,6 @@ const { create } = require('hbs');
 var gameBoard = new Array(Constants.LEVEL1.length);
 var dotCount;
 
-
-
 const app = express();
 const server = http.createServer(app);
 const io = socket(server);
@@ -53,7 +51,6 @@ io.on('connection', socket => {
     }
     if (entranceFailure) socket.disconnect();
     else {
-
       const user = userJoin(socket.id, username, lobby);
       //console.log("Starting position is: " + startingPos);
       socket.join(user.lobby);
@@ -73,9 +70,9 @@ io.on('connection', socket => {
       console.log("Sent users in lobby the user and lobby information from server.");
 
       //socket.emit('loadBoard');
-      console.log("Asked users to loadbBoard.");
+      //console.log("Asked users to loadbBoard.");
 
-      if(getLobbyUsers(user.lobby).length == 4){
+      if(getLobbyUsers(user.lobby).length == 4) {
         console.log("There are now four users. Let's get started.");
         let users = getLobbyUsers(user.lobby);
         setRoles(user, users);
@@ -84,24 +81,24 @@ io.on('connection', socket => {
   });
 
   function setRoles(user, users){
-    for(let i = 0; i < 4; i++){
+    for (let i = 0; i < 4; i++) {
       setPlayerNum(users[i].id, i + 1);
       setDirection(users[i].id, 0, 0);
 
     //First player will start at left ghost spot
     if (i == 0) {
         //setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
-        setIndex(users[i].id, 249);
+        setIndex(users[i].id, 230);
         console.log("Setting " + users[i].username + " as red ghost.");
       //Second player will start at middle ghost spot
       } else if (i == 1)  {
         //setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
-        setIndex(users[i].id, 250);
+        setIndex(users[i].id, 231);
         console.log("Setting " + users[i].username + " as blue ghost.");
       //Third player will start at right ghost spot
       } else if (i == 2)  {
         //setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
-        setIndex(users[i].id, 251);
+        setIndex(users[i].id, 232);
         console.log("Setting " + users[i].username + " as orange ghost.");
       //Last player will be pacman
       } else  {
@@ -128,7 +125,12 @@ io.on('connection', socket => {
   function createGameBoard(){
     //gameBoard
     console.log("in createGameBoard.");
-    gameBoard = Constants.LEVEL1;
+    //Old method for creating gameBoard:
+    //gameBoard = Constants.LEVEL1;
+    for (var i = 0; i < Constants.LEVEL1.length; i++) {
+      gameBoard[i] = Constants.LEVEL1[i];
+    }
+
     //gameBoard.forEach(element => gameBoard[element] = Constants.LEVEL1[element]);
 
     console.log("LEVEL1[0]=" + Constants.LEVEL1[0]);
@@ -170,6 +172,8 @@ io.on('connection', socket => {
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
+          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
+          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) - 20);
           update = true;
         }
@@ -178,6 +182,8 @@ io.on('connection', socket => {
     else if(direction === 'down') {
       if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
         if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
+          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
+          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) + 20);
           update = true;
         }
@@ -186,6 +192,8 @@ io.on('connection', socket => {
     else if(direction === 'left') {
       if ((getIndex(user.id) % 20) != 0)  { // Check that user is not in the leftmost column (leftmost columns are at indices: 0, 20, 40, ...)
         if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
+          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
+          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) - 1);
           update = true;
         }
@@ -194,19 +202,38 @@ io.on('connection', socket => {
     else if(direction === 'right')  {
       if ((getIndex(user.id) % 19) != 0)  { // Check that user is not in the rightmost column (rightmost columns are at indices: 19, 38, 57, ...)
         if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
+          console.log("old user index:" + getIndex(user.id)); // Development purposes only. DELETE
+          console.log("gameboard at old index: " + gameBoard[getIndex(user.id)]); // DELETE
           setIndex(user.id, getIndex(user.id) - 1);
           update = true;
         }
       }
     }
+
     // Send new Player position to all users
     if (update)  { // Server only emits gameBoard update if player movement was valid
-      console.log(user.username + ' moved ' + direction + ' index: ' + getIndex(user.id));
+      console.log("new user index:" + getIndex(user.id)); // Development purposes only. DELETE
+      if (getCurrentUser(user.id).playerRole === 0) {
+        gameBoard[getIndex(user.id)] = 3;
+      }
+      else if (getCurrentUser(user.id).playerRole === 1) {
+        gameBoard[getIndex(user.id)] = 4;
+      }
+      else if (getCurrentUser(user.id).playerRole === 2) {
+        gameBoard[getIndex(user.id)] = 5;
+      }
+      else if (getCurrentUser(user.id).playerRole === 1) {
+        gameBoard[getIndex(user.id)] = 7;
+      }
+      console.log("gameboard after updating index: " + gameBoard[getIndex(user.id)]); // DELETE
+
+      console.log(user.username + ' moved ' + direction + ' index: ' + getIndex(user.id)); // Development purposes only. Delete this
       io.to(user.lobby).emit('gameUpdate', {
         Lobby: user.lobby,
         users: getLobbyUsers(user.lobby),
         gameBoard: gameBoard
       });
+      //console.log(gameBoard.toString()); // Development purposes only. DELETE THIS
     }
 
     // OLD: player movement for old gameboard (not array-based):

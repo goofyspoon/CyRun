@@ -59,10 +59,8 @@ socket.on('loadBoard', () => {
 
 //io.to(user.lobby).emit('drawGameBoard', (gameBoard));
 socket.on('drawGameBoard',({gameBoard}) =>{
-
   console.log("Received drawGameBoard");
   drawGameBoard(gameBoard);
-
 });
 
 function drawGameBoard(gameBoard){
@@ -79,6 +77,8 @@ function drawGameBoard(gameBoard){
       const div = document.createElement('div');
       div.classList.add('square', SQUARE_LIST[square]);
       div.style.cssText = `width: ${CELL_SIZE}px; height: ${CELL_SIZE}px;`;
+      div.innerText = square; // Development purposes only. DELETE THIS
+      div.setAttribute("class", SQUARE_LIST[square]);
       board.appendChild(div);
       grid.push(div);
     });
