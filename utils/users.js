@@ -8,6 +8,7 @@ function userJoin(id, username, lobby)  {
                 playerRole : -1,
                 index: -1,
                 prevPosType: 0,
+                prevIndex: -1,
                 status: 0,
                 score : 0
                 //xDirection : 0,
@@ -62,6 +63,17 @@ function setIndex(id, i)  {
   users[index].index = i;
 }
 
+// Get prevIndex of user (from id)
+function getPrevIndex(id) {
+  return getCurrentUser(id).prevIndex;
+}
+
+// Set prevIndex of user (id)
+function setPrevIndex(id, i)  {
+  let index = users.findIndex(user => user.id === id);
+  users[index].prevIndex = i;
+}
+
 // Get player status
 function getStatus(id)  {
   return getCurrentUser(id).status;
@@ -104,6 +116,8 @@ module.exports = {
   setDirection,
   getIndex,
   setIndex,
+  getPrevIndex,
+  setPrevIndex,
   getPrevPosType,
   setPrevPosType,
   getStatus,

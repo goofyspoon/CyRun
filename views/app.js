@@ -125,7 +125,7 @@ function outputLobbyName(lobby) {
 
 socket.on('setRoles', ({users}) => {
   appendRoles(users);
-  document.getElementById("pregameMsg").innerHTML = "";
+  document.getElementById("pregameMsg").innerHTML = "Controls: Use the arrow keys to move your character.<br />";
 
 });
 

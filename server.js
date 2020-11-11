@@ -12,6 +12,8 @@ const {
   setDirection,
   getIndex,
   setIndex,
+  getPrevIndex,
+  setPrevIndex,
   getPrevPosType,
   setPrevPosType,
   getStatus,
@@ -95,11 +97,11 @@ io.on('connection', socket => {
         console.log("Setting " + users[i].username + " as red ghost.");
       //Second player will start at middle ghost spot
       } else if (i == 1)  {
-        setIndex(users[i].id, 211);
+        setIndex(users[i].id, 210);
         console.log("Setting " + users[i].username + " as blue ghost.");
       //Third player will start at right ghost spot
       } else if (i == 2)  {
-        setIndex(users[i].id, 212);
+        setIndex(users[i].id, 211);
         console.log("Setting " + users[i].username + " as orange ghost.");
       //Last player will be pacman
       } else  {
@@ -133,81 +135,135 @@ io.on('connection', socket => {
   }
   */
 
-  // Handle player movement over a pill or dot
+  // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
   function checkCollisions(gameBoard, index, user) {
-    if (gameBoard[index] == 6 || gameBoard[index] == 2) { // Check if index is a dot or pill
+    // Player collides with dot or pill
+    if (gameBoard[index] == 6 || gameBoard[index] == 2) {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
+          console.log("pacman consumed pill!");
           getLobbyUsers(user.id).forEach((user) =>   {
             setStatus(user.id, 1); // Ghosts are edible and Pacman has pill effect
           });
         }
         setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
       }
-      else {
+      else { // Ghost moved over pill/dot
+        console.log("setting prevPosType: " + gameBoard[index]);
         setPrevPosType(user.id, gameBoard[index]);
       }
     }
-    else if (gameBoard[index] != 0 || gameBoard[index] != 8) { // player runs into another player
+    // Player collides with another player
+    else if (gameBoard[index] != 0 || gameBoard[index] != 8) {
       if (getCurrentUser(user.id).playerRole == 4)  {
         if (getStatus(user.id) == 1)  {
-          // Pacman eats another player
+          // Pacman eats ghost
           incrementScore(user.id, 5);
           getLobbyUsers(user.id).forEach(user =>  {
             if (index == getIndex(user.id)) {
-              respawn(user); // TODO
+              respawn(user); // Ghost repawns
+            }
+          });
+        }
+        else {
+          // Pacman ran into ghost
+          getLobbyUsers(user.id).forEach((user) => {
+            if (index == getIndex(user.id)) {
+              incrementScore(user.id, 10); // Ghost killed pacman
+            }
+          });
+          respawn(user); // Pacman respawns
+        }
+      }
+      else {
+        // A ghost collided with pacman
+        if (gameBoard[index] == 7)  {
+          // Pacman ate a pill and can eat ghosts
+          if (getStatus(user.id) == 1)  {
+            getLobbyUsers(user.id).forEach(user =>  {
+              if (index == getIndex(user.id)) {
+                incrementScore(user.id, 5); // Pacman ate this ghost
+              }
+            });
+            respawn(user); // This ghost respawns
+          }
+          // Pacman can't eat ghosts and is killed
+          else {
+            incrementScore(user.id, 10); // Ghost killed pacman
+            getLobbyUsers(user.id).forEach(user => {
+              if (index == getIndex(user.id)) {
+                respawn(user);
+              }
+            });
+          }
+        }
+        // Lastly, a ghost collides with another ghost
+        else {
+          getLobbyUsers(user.id).forEach(user => {
+            if (index == getIndex(user.id)) {
+                return false; // no update made between these two players
             }
           });
         }
       }
     }
+    return true;
   }
 
   // Handle player respawn
   function respawn(user)  {
+    console.log("respawn funtion called on: " + user.username);
     // TODO
+    // Will ensure player has an open spot to spawn (ghosts spawn in middle and pacman spawns randomly)
   }
 
 
   // Handle player movement
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
-    const prevIndex = getIndex(user.id);
+    setPrevIndex(user.id, getIndex(user.id));
     var update = false;
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
-          checkCollisions(gameBoard, (getIndex(user.id) - 20), user);
-          setIndex(user.id, getIndex(user.id) - 20);
-          update = true;
+          if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
+            setIndex(user.id, getIndex(user.id) - 20);
+            update = true;
+          }
         }
       }
     }
     else if (direction === 'down') {
       if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
         if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
-          setIndex(user.id, getIndex(user.id) + 20);
-          update = true;
+          if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
+            setIndex(user.id, getIndex(user.id) + 20);
+            update = true;
+          }
         }
       }
     }
     else if (direction === 'left') {
       if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
-        setIndex(user.id, getIndex(user.id) - 1);
-        update = true;
+        if (checkCollisions(gameBoard, (getIndex(user.id) - 1), user))  {
+          setIndex(user.id, getIndex(user.id) - 1);
+          update = true;
+        }
       }
     }
     else if (direction === 'right')  {
       if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
-        setIndex(user.id, getIndex(user.id) + 1);
-        update = true;
+        if (checkCollisions(gameBoard, (getIndex(user.id) + 1), user))  {
+          setIndex(user.id, getIndex(user.id) + 1);
+          update = true;
+        }
       }
     }
 
     // Send new Player position to all users
     if (update)  { // Server only emits gameBoard update if player movement was valid
-      gameBoard[prevIndex] = 0; // Set previous position to blank
+      gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id); // Set previous position to blank
       if (getCurrentUser(user.id).playerRole === 1) {
         gameBoard[getIndex(user.id)] = 3;
       }
@@ -220,6 +276,7 @@ io.on('connection', socket => {
       else if (getCurrentUser(user.id).playerRole === 4) {
         gameBoard[getIndex(user.id)] = 7;
       }
+
       io.to(user.lobby).emit('gameUpdate', {
         Lobby: user.lobby,
         users: getLobbyUsers(user.lobby),
