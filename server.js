@@ -6,14 +6,16 @@ const Constants = require('./Constants.js');
 const {
   userJoin,
   getCurrentUser,
-  getCoords,
   userLeave,
   getLobbyUsers,
   setPlayerNum,
-  setCoords,
   setDirection,
   getIndex,
-  setIndex
+  setIndex,
+  getPrevPosType,
+  setPrevPosType,
+  getStatus,
+  setStatus,
 } = require('./utils/users');
 const { create } = require('hbs');
 
@@ -87,22 +89,18 @@ io.on('connection', socket => {
 
     //First player will start at left ghost spot
     if (i == 0) {
-        //setCoords(users[i].id, CANVAS_WIDTH/2 - 52, CANVAS_HEIGHT*2/5 + 25);
         setIndex(users[i].id, 229);
         console.log("Setting " + users[i].username + " as red ghost.");
       //Second player will start at middle ghost spot
       } else if (i == 1)  {
-        //setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*2/5 + 25);
         setIndex(users[i].id, 231);
         console.log("Setting " + users[i].username + " as blue ghost.");
       //Third player will start at right ghost spot
       } else if (i == 2)  {
-        //setCoords(users[i].id, CANVAS_WIDTH/2 + 18, CANVAS_HEIGHT*2/5 + 25);
         setIndex(users[i].id, 232);
         console.log("Setting " + users[i].username + " as orange ghost.");
       //Last player will be pacman
       } else  {
-        //setCoords(users[i].id, CANVAS_WIDTH/2 - 18, CANVAS_HEIGHT*3/4 - 15);
         setIndex(users[i].id, 290);
         console.log("Setting " + users[i].username + " as pacman.");
       }
@@ -121,32 +119,14 @@ io.on('connection', socket => {
     //gameloop();
   }
 
-
   function createGameBoard(){
     //gameBoard
     console.log("in createGameBoard.");
-    //Old method for creating gameBoard:
-    //gameBoard = Constants.LEVEL1;
-
-    gameBoard = Constants.LEVEL1.slice();
-    /*
-    for (var i = 0; i < Constants.LEVEL1.length; i++) {
-      gameBoard[i] = Constants.LEVEL1[i];
-    }*/
-
-    //gameBoard.forEach(element => gameBoard[element] = Constants.LEVEL1[element]);
-
-    console.log("LEVEL1[0]=" + Constants.LEVEL1[0]);
-    console.log("LEVEL1[1]="+ Constants.LEVEL1[1]);
-    console.log("LEVEL1[2]="+ Constants.LEVEL1[2]);
-
-    console.log("gameBoard[0]=" + gameBoard[0]);
-    console.log("gameBoard[1]="+ gameBoard[1]);
-    console.log("gameBoard[2]="+ gameBoard[2]);
-    //gameBoard.forEach(element => console.log(element));
-
+    gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in constants
   }
 
+  // Unused methods
+  /*
   function addObject(position, object){
     gameBoard[position].classList.add(...classes);
   }
@@ -158,17 +138,9 @@ io.on('connection', socket => {
   function objectExist(position, object){
     return gameBoard[position].classList.contains(object);
   }
+  */
 
-
-  // Lobby chat
-  // lobby chat -- normal message
-  socket.on('lobbyMessage', ({username, message}) => {
-    const user = getCurrentUser(socket.id);
-    io.to(user.lobby).emit('message', username + ': ' + message);
-  });
-
-
-  // Adjusts the direction for a player
+  // Handle player movement
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
     const prevIndex = getIndex(user.id);
@@ -176,6 +148,9 @@ io.on('connection', socket => {
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
+          if (gameBoard[getIndex(user.id) - 20] != 6) { // Check if user accessed a pill
+
+          }
           setIndex(user.id, getIndex(user.id) - 20);
           update = true;
         }
@@ -190,20 +165,15 @@ io.on('connection', socket => {
       }
     }
     else if (direction === 'left') {
-      if ((getIndex(user.id) % 20) != 1)  { // Check that user is not in the leftmost column (leftmost columns are at indices: 0, 20, 40, ...)
-        if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
-          setIndex(user.id, getIndex(user.id) - 1);
-          update = true;
-        }
+      if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
+        setIndex(user.id, getIndex(user.id) - 1);
+        update = true;
       }
     }
     else if (direction === 'right')  {
-      console.log('in "right" keypress');
-      if ((getIndex(user.id) % 19) != 1)  { // Check that user is not in the rightmost column (rightmost columns are at indices: 19, 38, 57, ...)
-        if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
-          setIndex(user.id, getIndex(user.id) + 1);
-          update = true;
-        }
+      if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
+        setIndex(user.id, getIndex(user.id) + 1);
+        update = true;
       }
     }
 
@@ -227,31 +197,14 @@ io.on('connection', socket => {
         users: getLobbyUsers(user.lobby),
         gameBoard: gameBoard
       });
-      //console.log(gameBoard.toString()); // Development purposes only. DELETE THIS
     }
+  }); // End handle player movement
 
-    // OLD: player movement for old gameboard (not array-based):
-    /*const user = getCurrentUser(socket.id);
-    if (direction === 'up')
-      setDirection(user.id, 0, -1);
-    else if(direction === 'down')
-      setDirection(user.id, 0, 1);
-    else if(direction === 'left')
-      setDirection(user.id, -1, 0);
-    else if(direction === 'right')
-      setDirection(user.id, 1, 0);
-
-	// Calculate new position for user
-	var newX = user.xCoord + user.xDirection;
-	var newY = user.yCoord + user.yDirection;
-	setCoords(user.id, newX, newY);
-    //console.log(gameBoard); // Development purposes only
-    // emit the players new position to everyone in the lobby
-    io.to(user.lobby).emit('gameUpdate', {
-      lobby: user.lobby,
-      users: getLobbyUsers(user.lobby),
-      gameBoard: gameBoard
-    });*/
+  // Lobby chat
+  // lobby chat -- normal message
+  socket.on('lobbyMessage', ({username, message}) => {
+    const user = getCurrentUser(socket.id);
+    io.to(user.lobby).emit('message', username + ': ' + message);
   });
 
   // Runs when client disconnects

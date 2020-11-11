@@ -181,19 +181,15 @@ function updateBoard(users, gameBoard){
 
 this.document.addEventListener('keydown', function(event) {
   if (event.key == "ArrowLeft") {
-    console.log("Pressed left!");
     socket.emit('changeDirection', ('left'));
   }
   else if (event.key == "ArrowUp") {
-    console.log("Pressed up!");
     socket.emit('changeDirection', ('up'));
   }
   else if (event.key == "ArrowRight") {
-    console.log("Pressed right!");
     socket.emit('changeDirection', ('right'));
   }
   else if (event.key == "ArrowDown") {
-    console.log("Pressed down!");
     socket.emit('changeDirection', ('down'));
   }
 }, true);

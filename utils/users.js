@@ -6,9 +6,9 @@ function userJoin(id, username, lobby)  {
                 username,
                 lobby,
                 playerRole : -1,
-                index: -1
-                //xCoord : -1,
-                //yCoord : -1,
+                index: -1,
+                prevPosType: 0;
+                status: 0
                 //xDirection : 0,
                 //yDirection : 0
               };
@@ -37,41 +37,50 @@ function getLobbyUsers(lobby) {
   return users.filter(user => user.lobby === lobby);
 }
 
-function getCoords(id){
-  let users = users.filter(user => user.id === id);
-  return {xCoord,
-          yCoord};
-}
-
-/*function getIndex(id){
-  let users = users.filter(user => user.id === id);
-  return {xCoord,
-          yCoord};
-}*/
-function getIndex(id) {
-  return getCurrentUser(id).index;
-}
-
-function setIndex(id, i){
-  let index = users.findIndex(user => user.id === id);
-  users[index].index = i;
-}
-
+// Set player role (1-4)
 function setPlayerNum(id, number){
   let index = users.findIndex(user => user.id === id);
   users[index].playerRole = number;
 }
 
-function setCoords(id, x, y){
-  let index = users.findIndex(user => user.id === id);
-  users[index].xCoord = x;
-  users[index].yCoord = y;
-}
-
+// Set Direction of player (not used right now)
 function setDirection(id, xDir, yDir){
   let index = users.findIndex(user => user.id === id);
   users[index].xDirection = xDir;
   users[index].yDirection = yDir;
+}
+
+// Get index of user (from id)
+function getIndex(id) {
+  return getCurrentUser(id).index;
+}
+
+// Set index of user (id)
+function setIndex(id, i)  {
+  let index = users.findIndex(user => user.id === id);
+  users[index].index = i;
+}
+
+// Get player status
+function getStatus(id)  {
+  return getCurrentUser(id).status;
+}
+
+// Set player status
+function setStatus(id, status)  {
+  let index = users.findIndex(user => user.id === id);
+  users[index].status = status;
+}
+
+// Get prev position type (empty, dot, pill)
+function getPrevPosType(id)  {
+  return getCurrentUser(id).prevPosType;
+}
+
+// Get prev position type (empty, dot, pill)
+function setPrevPosType(id, type)  {
+  let index = users.findIndex(user => user.id === id);
+  users[index].prevPosType = type;
 }
 
 module.exports = {
@@ -79,10 +88,12 @@ module.exports = {
   getCurrentUser,
   userLeave,
   getLobbyUsers,
-  getCoords,
   setPlayerNum,
-  setCoords,
   setDirection,
   getIndex,
-  setIndex
+  setIndex,
+  getPrevPosType,
+  setPrevPosType,
+  getStatus,
+  setStatus
 };
