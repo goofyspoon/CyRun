@@ -137,8 +137,13 @@ io.on('connection', socket => {
 
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
   function checkCollisions(gameBoard, index, user) {
+    // First check if player is colliding with nothing
+    if (gameBoard[index] == 0 || gameBoard[index] == 8) {
+      console.log("player colliding with nothing!");
+      setPrevPosType(user.id, gameBoard[index]);
+    }
     // Player collides with dot or pill
-    if (gameBoard[index] == 6 || gameBoard[index] == 2) {
+    else if (gameBoard[index] == 6 || gameBoard[index] == 2) {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
@@ -150,7 +155,7 @@ io.on('connection', socket => {
         setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
       }
       else { // Ghost moved over pill/dot
-        console.log("setting prevPosType: " + gameBoard[index]);
+        console.log("ghost moved over pill or dot");
         setPrevPosType(user.id, gameBoard[index]);
       }
     }
@@ -222,7 +227,8 @@ io.on('connection', socket => {
   // Handle player movement
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
-    setPrevIndex(user.id, getIndex(user.id));
+    const prevType = getPrevPosType(user.id);
+    console.log("prevType: " + prevType);
     var update = false;
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
@@ -263,7 +269,7 @@ io.on('connection', socket => {
 
     // Send new Player position to all users
     if (update)  { // Server only emits gameBoard update if player movement was valid
-      gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id); // Set previous position to blank
+      gameBoard[getPrevIndex(user.id)] = prevType; // Set previous position to blank
       if (getCurrentUser(user.id).playerRole === 1) {
         gameBoard[getIndex(user.id)] = 3;
       }
@@ -277,6 +283,7 @@ io.on('connection', socket => {
         gameBoard[getIndex(user.id)] = 7;
       }
 
+      setPrevIndex(user.id, getIndex(user.id));
       io.to(user.lobby).emit('gameUpdate', {
         Lobby: user.lobby,
         users: getLobbyUsers(user.lobby),
