@@ -135,16 +135,13 @@ io.on('connection', socket => {
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
   function checkCollisions(gameBoard, index, user) {
     // First check if player is colliding with nothing
-    if (gameBoard[index] == 0 || gameBoard[index] == 8) {
-      console.log("player colliding with nothing!");
+    if (gameBoard[index] == 0 || gameBoard[index] == 8)
       setPrevPosType(user.id, gameBoard[index]);
-    }
     // Player collides with dot or pill
     else if (gameBoard[index] == 6 || gameBoard[index] == 2) {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
-          console.log("pacman consumed pill!");
           getLobbyUsers(user.id).forEach((user) =>   {
             setStatus(user.id, 1); // Ghosts are edible and Pacman has pill effect
           });
@@ -152,7 +149,6 @@ io.on('connection', socket => {
         setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
       }
       else { // Ghost moved over pill/dot
-        console.log("ghost moved over pill or dot");
         setPrevPosType(user.id, gameBoard[index]);
       }
     }
@@ -164,7 +160,7 @@ io.on('connection', socket => {
           incrementScore(user.id, 5);
           getLobbyUsers(user.id).forEach(user =>  {
             if (index == getIndex(user.id)) {
-              respawn(user); // Ghost repawns
+              respawn(gameBoard, user); // Ghost repawns
             }
           });
         }
@@ -175,7 +171,7 @@ io.on('connection', socket => {
               incrementScore(user.id, 10); // Ghost killed pacman
             }
           });
-          respawn(user); // Pacman respawns
+          respawn(gameBoard, user); // Pacman respawns
         }
       }
       else {
@@ -188,14 +184,14 @@ io.on('connection', socket => {
                 incrementScore(user.id, 5); // Pacman ate this ghost
               }
             });
-            respawn(user); // This ghost respawns
+            respawn(gameBoard, user); // This ghost respawns
           }
           // Pacman can't eat ghosts and is killed
           else {
             incrementScore(user.id, 10); // Ghost killed pacman
             getLobbyUsers(user.id).forEach(user => {
               if (index == getIndex(user.id)) {
-                respawn(user);
+                respawn(gameBoard, user);
               }
             });
           }
@@ -214,10 +210,27 @@ io.on('connection', socket => {
   }
 
   // Handle player respawn
-  function respawn(user)  {
+  function respawn(gameBoard, user)  {
     console.log("respawn funtion called on: " + user.username);
-    // TODO
-    // Will ensure player has an open spot to spawn (ghosts spawn in middle and pacman spawns randomly)
+    if (user.playerRole == 4) {
+      // choose a random spawn point for Pacman in map
+      // ensures that player is not spawning in a wall or play
+      var spawn = Math.floor(Math.random() * gameBoard.length);
+      while (gameBoard[spawn] != 0)  {
+        spawn = Math.floor(Math.random() * gameBoard.length);
+      }
+      setIndex(user.id, spawn);
+      setPrevPosType(user.id, 0);
+    }
+    else {
+      // Spawn within middle ghost area (indices: min: 188, max: 251)
+      var spawn = Math.floor(Math.random() * (251 - 188)) + 188;
+      while (gameBoard[spawn] != 0 && gameBoard[spawn] != 8)  {
+        spawn = Math.floor(Math.random() * (251 - 188)) + 188;
+      }
+      setIndex(user.id, spawn);
+      setPrevPosType(user.id, 0);
+    }
   }
 
 
