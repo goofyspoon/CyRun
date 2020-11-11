@@ -84,21 +84,9 @@ function drawGameBoard(gameBoard){
     });
 }
 
-//socket.broadcast.to(user.lobby).emit('hey');
-socket.on('hey',({})=>{
-  console.log("HEY!");
-});
-
 function rotateDiv(position, degree){
   this.grid[position].style.transform = `rotate({deg}deg)`;
 }
-
-// Draw in characters and start timer for game
-socket.on('startGame', (users) => {
-  drawCharacters(users);
-  appendRoles(users);
-  startGame();
-});
 
 // Messages from Server
 socket.on('message', message => {
@@ -111,8 +99,6 @@ socket.on('message', message => {
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
   drawGameBoard(gameBoard);
-  //TODO?? might need a drawCharacters function. Don't know what happened to old version :(
-	//updateBoard(users, gameBoard); // Pre Array-based gameboard version
 });
 
 // Send message
@@ -139,6 +125,8 @@ function outputLobbyName(lobby) {
 
 socket.on('setRoles', ({users}) => {
   appendRoles(users);
+  document.getElementById("pregameMsg").innerHTML = "";
+
 });
 
 function appendRoles(users){
@@ -168,15 +156,6 @@ function outputUsers(users) {
     }
     userList.appendChild(li);
   });
-}
-
-function startGame(){
-  var timer = setInterval(updateBoard,100);
-}
-
-function updateBoard(users, gameBoard){
-	drawGameBoard(gameBoard); // redraw board
-  //drawCharacters(users); // redraw characters
 }
 
 this.document.addEventListener('keydown', function(event) {

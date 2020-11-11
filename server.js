@@ -16,6 +16,8 @@ const {
   setPrevPosType,
   getStatus,
   setStatus,
+  getScore,
+  incrementScore
 } = require('./utils/users');
 const { create } = require('hbs');
 
@@ -89,15 +91,15 @@ io.on('connection', socket => {
 
     //First player will start at left ghost spot
     if (i == 0) {
-        setIndex(users[i].id, 229);
+        setIndex(users[i].id, 209);
         console.log("Setting " + users[i].username + " as red ghost.");
       //Second player will start at middle ghost spot
       } else if (i == 1)  {
-        setIndex(users[i].id, 231);
+        setIndex(users[i].id, 211);
         console.log("Setting " + users[i].username + " as blue ghost.");
       //Third player will start at right ghost spot
       } else if (i == 2)  {
-        setIndex(users[i].id, 232);
+        setIndex(users[i].id, 212);
         console.log("Setting " + users[i].username + " as orange ghost.");
       //Last player will be pacman
       } else  {
@@ -107,22 +109,13 @@ io.on('connection', socket => {
   }
 
   io.to(user.lobby).emit('setRoles', {users : users});
-
   createGameBoard();
-  //socket.broadcast.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
-    //io.to(user.lobby).emit('startGame', (getLobbyUsers(user.lobby)));
-    io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
-    console.log("Emit to users to drawGameBoard, passing gameBoard array.");
-
-    //socket.broadcast.to(user.lobby).emit('hey', ({}));
-    io.to(user.lobby).emit('hey', ({}));
-    //gameloop();
+  io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
+  //gameloop();
   }
 
-  function createGameBoard(){
-    //gameBoard
-    console.log("in createGameBoard.");
-    gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in constants
+  function createGameBoard()  {
+    gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
   }
 
   // Unused methods
@@ -140,6 +133,43 @@ io.on('connection', socket => {
   }
   */
 
+  // Handle player movement over a pill or dot
+  function checkCollisions(gameBoard, index, user) {
+    if (gameBoard[index] == 6 || gameBoard[index] == 2) { // Check if index is a dot or pill
+      if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
+        incrementScore(user.id, 1);
+        if (gameBoard[index] == 6) { // pacman consumed pill
+          getLobbyUsers(user.id).forEach((user) =>   {
+            setStatus(user.id, 1); // Ghosts are edible and Pacman has pill effect
+          });
+        }
+        setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
+      }
+      else {
+        setPrevPosType(user.id, gameBoard[index]);
+      }
+    }
+    else if (gameBoard[index] != 0 || gameBoard[index] != 8) { // player runs into another player
+      if (getCurrentUser(user.id).playerRole == 4)  {
+        if (getStatus(user.id) == 1)  {
+          // Pacman eats another player
+          incrementScore(user.id, 5);
+          getLobbyUsers(user.id).forEach(user =>  {
+            if (index == getIndex(user.id)) {
+              respawn(user); // TODO
+            }
+          });
+        }
+      }
+    }
+  }
+
+  // Handle player respawn
+  function respawn(user)  {
+    // TODO
+  }
+
+
   // Handle player movement
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
@@ -148,9 +178,7 @@ io.on('connection', socket => {
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
-          if (gameBoard[getIndex(user.id) - 20] != 6) { // Check if user accessed a pill
-
-          }
+          checkCollisions(gameBoard, (getIndex(user.id) - 20), user);
           setIndex(user.id, getIndex(user.id) - 20);
           update = true;
         }

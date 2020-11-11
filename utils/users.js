@@ -7,8 +7,9 @@ function userJoin(id, username, lobby)  {
                 lobby,
                 playerRole : -1,
                 index: -1,
-                prevPosType: 0;
-                status: 0
+                prevPosType: 0,
+                status: 0,
+                score : 0
                 //xDirection : 0,
                 //yDirection : 0
               };
@@ -83,6 +84,17 @@ function setPrevPosType(id, type)  {
   users[index].prevPosType = type;
 }
 
+// Get score of a player
+function getScore(id) {
+  return getCurrentUser(id).score;
+}
+
+// Increment score of a player
+function incrementScore(id, amount) {
+  let index = users.findIndex(user => user.id === id);
+  users[index].score += amount;
+}
+
 module.exports = {
   userJoin,
   getCurrentUser,
@@ -95,5 +107,7 @@ module.exports = {
   getPrevPosType,
   setPrevPosType,
   getStatus,
-  setStatus
+  setStatus,
+  getScore,
+  incrementScore
 };
