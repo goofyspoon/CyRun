@@ -102,6 +102,17 @@ socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
   updateScores(users);
 });
 
+// gameOver from server
+socket.on('gameOver', ({lobby, users, gameTime}) => {
+  // TO BE IMPLEMENTED
+  // Determine winner and show overall scoreboard
+  // Possibly take users to another page with description of round (time, scoreboard, etc.)
+  // Maybe take in a timer parameter as well?
+  var test = document.createElement('p'); // DELETE THIS
+  test.innerText = 'game time: ' + gameTime + ' seconds'; // DELETE THIS
+  chat.appendChild(test); // DELETE THIS
+});
+
 // Send message
 sendChat.addEventListener('click', (e) => {
   e.preventDefault();
@@ -160,6 +171,7 @@ function updateScores(users)  {
     if (user.playerRole == 4)
       var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
 
+      scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
     fakeUsers[user.playerRole - 1] = {username: scoreName};
   });
   outputUsers(fakeUsers);

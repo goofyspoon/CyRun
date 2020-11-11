@@ -24,7 +24,7 @@ const {
 const { create } = require('hbs');
 
 var gameBoard;
-var dotCount;
+var gameTimer;
 
 const app = express();
 const server = http.createServer(app);
@@ -58,12 +58,11 @@ io.on('connection', socket => {
     if (entranceFailure) socket.disconnect();
     else {
       const user = userJoin(socket.id, username, lobby);
-      //console.log("Starting position is: " + startingPos);
       socket.join(user.lobby);
 
       // Welcome current user to lobby
       socket.emit('message', 'Welcome to CyRun lobby ' + user.lobby);
-      console.log("User "+ user.username+ "joined.");
+      console.log("User "+ user.username+ "joined."); // Development purposes only. DELETE THIS
 
       // Broadcast when a user connects
       socket.broadcast.to(user.lobby).emit('message', user.username + ' joined the lobby');
@@ -73,13 +72,10 @@ io.on('connection', socket => {
         lobby: user.lobby,
         users: getLobbyUsers(user.lobby)
       });
-      console.log("Sent users in lobby the user and lobby information from server.");
-
-      //socket.emit('loadBoard');
-      //console.log("Asked users to loadbBoard.");
+      //console.log("Sent users in lobby the user and lobby information from server."); // Development purposes only. DELETE THIS
 
       if(getLobbyUsers(user.lobby).length == 4) {
-        console.log("There are now four users. Let's get started.");
+        //console.log("There are now four users. Let's get started.");
         createGameBoard();
         let users = getLobbyUsers(user.lobby);
         setRoles(user, users);
@@ -105,7 +101,7 @@ io.on('connection', socket => {
         setPrevPosType(users[i].id, 0);
       }
   }
-
+  gameTimer = new Date();
   io.to(user.lobby).emit('setRoles', {users : users});
   io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
   //gameloop();
@@ -133,24 +129,31 @@ io.on('connection', socket => {
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
   function checkCollisions(gameBoard, index, user) {
     // First check if player is colliding with nothing
-    if (gameBoard[index] == 0 || gameBoard[index] == 8)
+    if (gameBoard[index] == 0 || gameBoard[index] == 8) {
       setPrevPosType(user.id, gameBoard[index]);
-    // Player collides with dot or pill
+      return true;
+    } // Player collides with dot or pill
     else if (gameBoard[index] == 6 || gameBoard[index] == 2) {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
-          getLobbyUsers(user.id).forEach((user) =>   {
-            setStatus(user.id, 1); // Ghosts are edible and Pacman has pill effect
-          });
+          if (user.getStatus == 1)  { // Pacman already had pill effect. Simply reset interval
+            socket.emit('message', 'delaying statusChange another 10 seconds');
+            setTimeout(function() {statusChange(user);}, 10000);
+          }
+          else { // Pacman consums pill
+            statusChange(user);
+            setTimeout(function() {statusChange(user);}, 10000);
+          }
         }
         setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
+        return true;
       }
       else { // Ghost moved over pill/dot
         setPrevPosType(user.id, gameBoard[index]);
+        return true;
       }
-    }
-    // Player collides with another player
+    } // Player collides with another player
     else if (gameBoard[index] != 0 || gameBoard[index] != 8) {
       if (getCurrentUser(user.id).playerRole == 4)  {
         if (getStatus(user.id) == 1)  {
@@ -162,8 +165,7 @@ io.on('connection', socket => {
             }
           });
         }
-        else {
-          // Pacman ran into ghost
+        else { // Pacman ran into ghost
           getLobbyUsers(user.id).forEach((user) => {
             if (index == getIndex(user.id)) {
               incrementScore(user.id, 10); // Ghost killed pacman
@@ -171,9 +173,9 @@ io.on('connection', socket => {
           });
           respawn(gameBoard, user); // Pacman respawns
         }
+        return true; // Pacman collided with another player. One of them respawns.
       }
-      else {
-        // A ghost collided with pacman
+      else { // A ghost collided with pacman
         if (gameBoard[index] == 7)  {
           // Pacman ate a pill and can eat ghosts
           if (getStatus(user.id) == 1)  {
@@ -183,8 +185,7 @@ io.on('connection', socket => {
               }
             });
             respawn(gameBoard, user); // This ghost respawns
-          }
-          // Pacman can't eat ghosts and is killed
+          } // Pacman can't eat ghosts and is killed
           else {
             incrementScore(user.id, 10); // Ghost killed pacman
             getLobbyUsers(user.id).forEach(user => {
@@ -193,8 +194,8 @@ io.on('connection', socket => {
               }
             });
           }
-        }
-        // Lastly, a ghost collides with another ghost
+          return true; // Ghost collided with pacman. one of them respawns.
+        } // Lastly, a ghost collides with another ghost
         else {
           getLobbyUsers(user.id).forEach(user => {
             if (index == getIndex(user.id)) {
@@ -204,7 +205,6 @@ io.on('connection', socket => {
         }
       }
     }
-    return true;
   }
 
   // Handle player respawn
@@ -231,6 +231,32 @@ io.on('connection', socket => {
     }
   }
 
+  // Handle Pacman eating a pill and becoming super
+  function statusChange(user)  {
+    socket.emit('message', 'status changing');
+    getLobbyUsers(user.lobby).forEach((user) =>   {
+      if (getStatus(user.id) == 0)  {
+        setStatus(user.id, 1); // Ghosts are edible and Pacman has pill effect
+      }
+      else {
+        setStatus(user.id, 0); // Ghosts are not edible and pacman doesn't have pill effect
+      }
+    });
+  }
+
+  // check the status of the game (pacman collected all dots/pills or not)
+  function checkGameStatus(gameBoard) {
+    for (var i = 0; i < gameBoard.length; i++) {
+      if (gameBoard[i] == 2 || gameBoard[i] == 6)  {
+        return false;
+      }
+    }
+    // Game is over, record how long game was and return true
+    gameTimer = (new Date()) - gameTimer;
+    gameTimer /= 1000; //Strip the ms
+    gameTimer = Math.round(gameTimer);
+    return true;
+  }
 
   // Handle player movement
   socket.on('changeDirection', (direction) => {
@@ -303,13 +329,21 @@ io.on('connection', socket => {
       }
 
       setPrevIndex(user.id, getIndex(user.id));
-
-      // Send gameUpdate with new gameBoard to clients
-      io.to(user.lobby).emit('gameUpdate', {
-        Lobby: user.lobby,
-        users: getLobbyUsers(user.lobby),
-        gameBoard: gameBoard
-      });
+      // Check if game is over and respond accordingly
+      if (checkGameStatus(gameBoard))
+        io.to(user.lobby).emit('gameOver', {
+          lobby: user.lobby,
+          users: getLobbyUsers(user.lobby),
+          gameTime: gameTimer
+        });
+      else {
+        // Send gameUpdate with new gameBoard to clients
+        io.to(user.lobby).emit('gameUpdate', {
+          lobby: user.lobby,
+          users: getLobbyUsers(user.lobby),
+          gameBoard: gameBoard
+        });
+      }
     }
   }); // End handle player movement
 
