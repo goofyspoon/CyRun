@@ -137,13 +137,14 @@ io.on('connection', socket => {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
+          var statusTimer = setTimeout(() => statusChange(user), 10000);
           if (user.getStatus == 1)  { // Pacman already had pill effect. Simply reset interval
-            socket.emit('message', 'delaying statusChange another 10 seconds');
-            setTimeout(function() {statusChange(user);}, 10000);
+            socket.emit('message', 'Clearing previous timer and setting a new one');
+            clearTimeout(statusTimer);
+            statusChange(statusTimer);
           }
           else { // Pacman consums pill
-            statusChange(user);
-            setTimeout(function() {statusChange(user);}, 10000);
+            statusChange(statusTimer);
           }
         }
         setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
