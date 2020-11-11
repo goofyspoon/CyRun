@@ -1,8 +1,3 @@
-#users  {
-  list-style-type: none;
-  list-style-position: inside;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -63,6 +58,17 @@
 #start-button {
   margin-top: 20px;
 }
+
+#gamelobby, #users_lobby  {
+  text-align: center;
+}
+
+#users  {
+  text-align: left;
+  list-style-type: none;
+  list-style-position: inside;
+}
+
 
 .hide {
   display: none;
