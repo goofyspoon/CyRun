@@ -80,6 +80,7 @@ io.on('connection', socket => {
 
       if(getLobbyUsers(user.lobby).length == 4) {
         console.log("There are now four users. Let's get started.");
+        createGameBoard();
         let users = getLobbyUsers(user.lobby);
         setRoles(user, users);
       }
@@ -91,24 +92,21 @@ io.on('connection', socket => {
       setPlayerNum(users[i].id, i + 1);
       setDirection(users[i].id, 0, 0);
 
-    if (i == 0) { // First player will start at left ghost spot
-        setIndex(users[i].id, 209);
-        setPrevIndex(users[i].id, 209);
-      } else if (i == 1)  { //Second player will start at middle ghost spot
-        setIndex(users[i].id, 210);
-        setPrevIndex(users[i].id, 210);
-
-      } else if (i == 2)  { // Third player starts at right ghost spot
-        setIndex(users[i].id, 211);
-        setPrevIndex(users[i].id, 211);
-      } else  {// Last player will be pacman
-        setIndex(users[i].id, 290);
-        setPrevIndex(users[i].id, 290);
+    if (i < 3) { // Players 0, 1, & 2 are ghosts
+        respawn(gameBoard, users[i]);
+        setPrevIndex(users[i].id, getIndex(users[i].id));
+        gameBoard[getIndex(users[i].id)] = i + 3;
+        setPrevPosType(users[i].id, 8);
+      } else  { // Last player will be pacman
+        var pacmanStart = Math.floor(Math.random() * (292 - 288)) + 288;
+        setIndex(users[i].id, pacmanStart);
+        setPrevIndex(users[i].id, pacmanStart);
+        gameBoard[getIndex(users[i].id)] = 7;
+        setPrevPosType(users[i].id, 0);
       }
   }
 
   io.to(user.lobby).emit('setRoles', {users : users});
-  createGameBoard();
   io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
   //gameloop();
   }
@@ -224,9 +222,9 @@ io.on('connection', socket => {
     }
     else {
       // Spawn within middle ghost area (indices: min: 188, max: 251)
-      var spawn = Math.floor(Math.random() * (251 - 188)) + 188;
-      while (gameBoard[spawn] != 0 && gameBoard[spawn] != 8)  {
-        spawn = Math.floor(Math.random() * (251 - 188)) + 188;
+      var spawn = Math.floor(Math.random() * (251 - 208)) + 208;
+      while (gameBoard[spawn] != 8)  {
+        spawn = Math.floor(Math.random() * (251 - 208)) + 208;
       }
       setIndex(user.id, spawn);
       setPrevPosType(user.id, 0);
@@ -252,15 +250,22 @@ io.on('connection', socket => {
     else if (direction === 'down') {
       if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
         if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
-          if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
-            setIndex(user.id, getIndex(user.id) + 20);
-            update = true;
+          if (user.playerRole != 4 || gameBoard[getIndex(user.id) + 20] != 8) { // Check that pacman is not moving into ghost lair
+            if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
+              setIndex(user.id, getIndex(user.id) + 20);
+              update = true;
+            }
           }
         }
       }
     }
     else if (direction === 'left') {
-      if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
+      if (getIndex(user.id) == 220) { // user goes through portal on left side
+        if (checkCollisions(gameBoard, 239, user))  {
+          setIndex(user.id, 239);
+          update = true;
+        }
+      } else if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
         if (checkCollisions(gameBoard, (getIndex(user.id) - 1), user))  {
           setIndex(user.id, getIndex(user.id) - 1);
           update = true;
@@ -268,7 +273,12 @@ io.on('connection', socket => {
       }
     }
     else if (direction === 'right')  {
-      if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
+      if (getIndex(user.id) == 239) { // user goes through portal on right side
+        if (checkCollisions(gameBoard, 220, user))  {
+          setIndex(user.id, 220);
+          update = true;
+        }
+      } else if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
         if (checkCollisions(gameBoard, (getIndex(user.id) + 1), user))  {
           setIndex(user.id, getIndex(user.id) + 1);
           update = true;

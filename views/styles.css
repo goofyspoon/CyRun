@@ -82,6 +82,10 @@
   background: black;
 }
 
+.lair {
+  background-color: #171717;
+}
+
 .wall {
   border: 1px solid blue;
 }
