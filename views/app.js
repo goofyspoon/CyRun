@@ -99,6 +99,7 @@ socket.on('message', message => {
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
   drawGameBoard(gameBoard);
+  updateScores(users);
 });
 
 // Send message
@@ -124,12 +125,12 @@ function outputLobbyName(lobby) {
 }
 
 socket.on('setRoles', ({users}) => {
-  appendRoles(users);
+  //appendRoles(users);
+  updateScores(users);
   document.getElementById("pregameMsg").innerHTML = "Controls: Use the arrow keys to move your character.<br />";
-
 });
 
-function appendRoles(users){
+/*function appendRoles(users){
    var descendants = userList.getElementsByTagName('li');
    if ( descendants.length > 0){
      for(let i = 0; i < descendants.length; i ++){
@@ -143,7 +144,27 @@ function appendRoles(users){
           descendants[i].textContent += ' - PacMan';
      }
    }
+}*/
+
+function updateScores(users)  {
+  var scores = [0, 0, 0, 0];
+  var fakeUsers = [0, 0, 0, 0];
+  users.forEach(user => {
+    scores[user.playerRole - 1] = user.score;
+    if (user.playerRole == 1)
+      var scoreName = "Red Ghost: " + user.username + "\nScore: " + user.score ;
+    if (user.playerRole == 2)
+      var scoreName = "Blue Ghost: " + user.username + "\nScore: " + user.score;
+    if (user.playerRole == 3)
+      var scoreName = "Orange Ghost: " + user.username + "\nScore: " + user.score;
+    if (user.playerRole == 4)
+      var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
+
+    fakeUsers[user.playerRole - 1] = {username: scoreName};
+  });
+  outputUsers(fakeUsers);
 }
+
 
 // Add users list to lobby page
 function outputUsers(users) {
@@ -151,8 +172,9 @@ function outputUsers(users) {
   users.forEach(user => {
     const li = document.createElement('li');
     li.innerText = user.username;
-    if (user.username === username) {
-      li.style.color = "red";
+    li.setAttribute("id", user.username);
+    if (user.username.includes(username)) {
+      li.style.fontWeight = "bold";
     }
     userList.appendChild(li);
   });

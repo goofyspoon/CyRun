@@ -129,15 +129,24 @@
 }
 
 .ghost1 {
-  background: red;
+  /*background: red;*/
+  background-color: black;
+  background-image: url('red_ghost.png');
+  background-size: cover;
 }
 
 .ghost2 {
-  background: pink;
+  /*background: pink;*/
+  background-color: black;
+  background-image: url('blue_ghost.png');
+  background-size: cover;
 }
 
 .ghost3 {
-  background: cyan;
+  /*background: cyan;*/
+  background-color: black;
+  background-image: url('orange_ghost.png');
+  background-size: cover;
 }
 
 .pacman {

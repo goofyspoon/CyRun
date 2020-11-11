@@ -91,22 +91,19 @@ io.on('connection', socket => {
       setPlayerNum(users[i].id, i + 1);
       setDirection(users[i].id, 0, 0);
 
-    //First player will start at left ghost spot
-    if (i == 0) {
+    if (i == 0) { // First player will start at left ghost spot
         setIndex(users[i].id, 209);
-        console.log("Setting " + users[i].username + " as red ghost.");
-      //Second player will start at middle ghost spot
-      } else if (i == 1)  {
+        setPrevIndex(users[i].id, 209);
+      } else if (i == 1)  { //Second player will start at middle ghost spot
         setIndex(users[i].id, 210);
-        console.log("Setting " + users[i].username + " as blue ghost.");
-      //Third player will start at right ghost spot
-      } else if (i == 2)  {
+        setPrevIndex(users[i].id, 210);
+
+      } else if (i == 2)  { // Third player starts at right ghost spot
         setIndex(users[i].id, 211);
-        console.log("Setting " + users[i].username + " as orange ghost.");
-      //Last player will be pacman
-      } else  {
+        setPrevIndex(users[i].id, 211);
+      } else  {// Last player will be pacman
         setIndex(users[i].id, 290);
-        console.log("Setting " + users[i].username + " as pacman.");
+        setPrevIndex(users[i].id, 290);
       }
   }
 
@@ -228,7 +225,6 @@ io.on('connection', socket => {
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
     const prevType = getPrevPosType(user.id);
-    console.log("prevType: " + prevType);
     var update = false;
     if (direction === 'up') {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
@@ -284,6 +280,8 @@ io.on('connection', socket => {
       }
 
       setPrevIndex(user.id, getIndex(user.id));
+
+      // Send gameUpdate with new gameBoard to clients
       io.to(user.lobby).emit('gameUpdate', {
         Lobby: user.lobby,
         users: getLobbyUsers(user.lobby),
