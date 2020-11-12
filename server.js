@@ -139,14 +139,12 @@ io.on('connection', socket => {
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
           statusTimer = setTimeout(() => statusChange(user), 10000);
-          if (user.status == 0) { // Only give pacman effect if he doesn't already have it
-            statusChange(user);
-            statusChange(statusTimer);
+          if (user.status == 0) {
+            statusChange(user); // change status (ghosts edible)
+            statusChange(statusTimer); // change status with timer
           }
-          else {
-            console.log('timer: ' + statusTimer);
+          else { // Pacman recently consumed pill. Reset timer
             clearTimeout(statusTimer);
-            console.log('timer: ' + statusTimer);
             statusChange(statusTimer);
           }
         }
@@ -163,45 +161,45 @@ io.on('connection', socket => {
         if (getStatus(user.id) == 1)  {
           // Pacman eats ghost
           incrementScore(user.id, 5);
-          getLobbyUsers(user.id).forEach(user =>  {
+          getLobbyUsers(user.lobby).forEach(user =>  {
             if (index == getIndex(user.id)) {
               respawn(gameBoard, user); // Ghost repawns
             }
           });
         }
-        else { // Pacman ran into ghost
-          getLobbyUsers(user.id).forEach((user) => {
+        else { // Pacman collided with ghost
+          getLobbyUsers(user.lobby).forEach((user) => {
             if (index == getIndex(user.id)) {
               incrementScore(user.id, 10); // Ghost killed pacman
             }
           });
+          gameBoard[getPrevIndex(user.id)] = 0; // Pacman ran into ghost. Old index is set to blank
           respawn(gameBoard, user); // Pacman respawns
         }
         return true; // Pacman collided with another player. One of them respawns.
       }
-      else { // A ghost collided with pacman
-        if (gameBoard[index] == 7)  {
-          // Pacman ate a pill and can eat ghosts
-          if (getStatus(user.id) == 1)  {
-            getLobbyUsers(user.id).forEach(user =>  {
+      else { // A ghost collided with another player
+        if (gameBoard[index] == 7)  { // A ghost collided with pacman
+          if (getStatus(user.id) == 1)  { // Pacman ate a pill and can eat ghosts
+            getLobbyUsers(user.lobby).forEach(user =>  {
               if (index == getIndex(user.id)) {
                 incrementScore(user.id, 5); // Pacman ate this ghost
               }
             });
             respawn(gameBoard, user); // This ghost respawns
-          } // Pacman can't eat ghosts and is killed
-          else {
+          }
+          else { // Pacman can't eat ghosts and is killed
             incrementScore(user.id, 10); // Ghost killed pacman
-            getLobbyUsers(user.id).forEach(user => {
+            getLobbyUsers(user.lobby).forEach(user => {
               if (index == getIndex(user.id)) {
-                respawn(gameBoard, user);
+                respawn(gameBoard, user); // Pacman respawns
               }
             });
           }
           return true; // Ghost collided with pacman. one of them respawns.
-        } // Lastly, a ghost collides with another ghost
-        else {
-          getLobbyUsers(user.id).forEach(user => {
+        }
+        else { // Lastly, a ghost collides with another ghost
+          getLobbyUsers(user.lobby).forEach(user => {
             if (index == getIndex(user.id)) {
                 return false; // no update made between these two players
             }
@@ -213,13 +211,16 @@ io.on('connection', socket => {
 
   // Handle player respawn
   function respawn(gameBoard, user)  {
-    console.log("respawn funtion called on: " + user.username);
+    console.log("respawn funtion called on: " + user.username); // Development purposes only. DELETE THIS
+    var foundSpawn = false;
     if (user.playerRole == 4) {
       // choose a random spawn point for Pacman in map
       // ensures that player is not spawning in a wall or play
       var spawn = Math.floor(Math.random() * gameBoard.length);
-      while (gameBoard[spawn] != 0)  {
+      while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * gameBoard.length);
+        socket.emit('message', gameBoard[spawn]);
+        foundSpawn = (gameBoard[spawn] == 0); // Break out of while loop if empty cell found
       }
       setIndex(user.id, spawn);
       setPrevPosType(user.id, 0);
@@ -227,12 +228,15 @@ io.on('connection', socket => {
     else {
       // Spawn within middle ghost area (indices: min: 188, max: 251)
       var spawn = Math.floor(Math.random() * (251 - 208)) + 208;
-      while (gameBoard[spawn] != 8)  {
+      while (foundSpawn)  {
         spawn = Math.floor(Math.random() * (251 - 208)) + 208;
+        foundSpawn = (gameBoard[spawn] == 8); // Break out of while loop if empty lair cell found
       }
       setIndex(user.id, spawn);
       setPrevPosType(user.id, 0);
     }
+    setPrevIndex(user.id, getIndex(user.id));
+    gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
   }
 
   // Handle Pacman eating a pill and becoming super
