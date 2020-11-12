@@ -7,12 +7,11 @@ function userJoin(id, username, lobby)  {
                 lobby,
                 playerRole : -1,
                 index: -1,
+                direction : 0,
                 prevPosType: 0,
                 prevIndex: -1,
                 status: 0,
                 score : 0
-                //xDirection : 0,
-                //yDirection : 0
               };
 
   users.push(user);
@@ -61,6 +60,17 @@ function getIndex(id) {
 function setIndex(id, i)  {
   let index = users.findIndex(user => user.id === id);
   users[index].index = i;
+}
+
+// Get the direction of a user (0 none, -20 up, 1 right, 20 down, -1 left)
+function getDirection(id) {
+  return getCurrentUser(id).direction;
+}
+
+// Set the direction of a user (0 none, -20 up, 1 right, 20 down, -1 left)
+function setDirection(id, direction)  {
+  let index = users.findIndex(user => user.id === id);
+  users[index].direction = direction;
 }
 
 // Get prevIndex of user (from id)
@@ -113,9 +123,10 @@ module.exports = {
   userLeave,
   getLobbyUsers,
   setPlayerNum,
-  setDirection,
   getIndex,
   setIndex,
+  getDirection,
+  setDirection,
   getPrevIndex,
   setPrevIndex,
   getPrevPosType,

@@ -9,9 +9,10 @@ const {
   userLeave,
   getLobbyUsers,
   setPlayerNum,
-  setDirection,
   getIndex,
   setIndex,
+  getDirection,
+  setDirection,
   getPrevIndex,
   setPrevIndex,
   getPrevPosType,
@@ -102,16 +103,29 @@ io.on('connection', socket => {
         setPrevPosType(users[i].id, 0);
       }
   }
-  gameTimer = new Date();
+
   io.to(user.lobby).emit('setRoles', {users : users});
   io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
-  //gameloop();
+  game(users, gameBoard);
   }
 
   function createGameBoard()  {
     gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
   }
 
+  function game(users, gameBoard) {
+    gameTimer = new Date();
+
+    // Constant game communication between server and client
+    while (checkGameStatus(gameBoard))  {
+      setInterval(function(gameBoard) {
+        io.to(user.lobby).emit('gameCommunication', ({
+          gameBoard: gameBoard,
+          users: getLobbyUsers(user.lobby)}));
+      }, 500);
+    }
+    
+  }
   // Unused methods
   /*
   function addObject(position, object){
@@ -212,7 +226,6 @@ io.on('connection', socket => {
 
   // Handle player respawn
   function respawn(gameBoard, user)  {
-    console.log("respawn funtion called on: " + user.username); // Development purposes only. DELETE THIS
     var foundSpawn = false;
     if (user.playerRole == 4) {
       // choose a random spawn point for Pacman in map
@@ -220,7 +233,6 @@ io.on('connection', socket => {
       var spawn = Math.floor(Math.random() * gameBoard.length);
       while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * gameBoard.length);
-        socket.emit('message', gameBoard[spawn]);
         foundSpawn = (gameBoard[spawn] == 0 && spawn != getIndex(user.id)); // Break out of while loop if empty cell (or dot cell) found and not in the same cell
       }
       setIndex(user.id, spawn);
@@ -275,10 +287,12 @@ io.on('connection', socket => {
       if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
         if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
           if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
+            setDirection(user.id, -20); // Set player direction to up
             setIndex(user.id, getIndex(user.id) - 20);
             update = true;
           }
         }
+        else setDirection(user.id, 0); // Stop player if they are moving into wall (going up)
       }
     }
     else if (direction === 'down') {
@@ -286,16 +300,19 @@ io.on('connection', socket => {
         if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
           if (user.playerRole != 4 || gameBoard[getIndex(user.id) + 20] != 8) { // Check that pacman is not moving into ghost lair
             if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
+              setDirection(user.id, 20); // Set player direction to down
               setIndex(user.id, getIndex(user.id) + 20);
               update = true;
             }
           }
+          else setDirection(user.id, 0); // Stop player if they are moving into wall (going down)
         }
       }
     }
     else if (direction === 'left') {
       if (getIndex(user.id) == 220) { // user goes through portal on left side
         if (checkCollisions(gameBoard, 239, user))  {
+          setDirection(user.id, -1); // Set player direction to left
           setIndex(user.id, 239);
           update = true;
         }
@@ -305,6 +322,7 @@ io.on('connection', socket => {
           update = true;
         }
       }
+      else setDirection(user.id, 0) // Stop player if they are moving into wall (going left)
     }
     else if (direction === 'right')  {
       if (getIndex(user.id) == 239) { // user goes through portal on right side
@@ -314,10 +332,12 @@ io.on('connection', socket => {
         }
       } else if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
         if (checkCollisions(gameBoard, (getIndex(user.id) + 1), user))  {
+          setDirection(user.id, 1); // Set player direction to right
           setIndex(user.id, getIndex(user.id) + 1);
           update = true;
         }
       }
+      else setDirection(user.id, 0);
     }
 
     // Send new Player position to all users
