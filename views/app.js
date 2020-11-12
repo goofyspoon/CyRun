@@ -171,7 +171,7 @@ function updateScores(users)  {
     if (user.playerRole == 4)
       var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
 
-      scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
+    scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
     fakeUsers[user.playerRole - 1] = {username: scoreName};
   });
   outputUsers(fakeUsers);
@@ -193,16 +193,19 @@ function outputUsers(users) {
 }
 
 this.document.addEventListener('keydown', function(event) {
-  if (event.key == "ArrowLeft") {
-    socket.emit('changeDirection', ('left'));
-  }
-  else if (event.key == "ArrowUp") {
-    socket.emit('changeDirection', ('up'));
-  }
-  else if (event.key == "ArrowRight") {
-    socket.emit('changeDirection', ('right'));
-  }
-  else if (event.key == "ArrowDown") {
-    socket.emit('changeDirection', ('down'));
+  event.preventDefault();
+  if (!event.repeat)  { // event.repeat is true if user is holding down key (this causes issues with server)
+    if (event.key == "ArrowLeft") {
+      socket.emit('changeDirection', ('left'));
+    }
+    else if (event.key == "ArrowUp") {
+      socket.emit('changeDirection', ('up'));
+    }
+    else if (event.key == "ArrowRight") {
+      socket.emit('changeDirection', ('right'));
+    }
+    else if (event.key == "ArrowDown") {
+      socket.emit('changeDirection', ('down'));
+    }
   }
 }, true);
