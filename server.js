@@ -159,7 +159,7 @@ io.on('connection', socket => {
     else if (gameBoard[index] != 0 || gameBoard[index] != 8) {
       if (getCurrentUser(user.id).playerRole == 4)  {
         if (getStatus(user.id) == 1)  {
-          // Pacman eats ghost
+          // Pacman collides with (eats) ghost
           incrementScore(user.id, 5);
           getLobbyUsers(user.lobby).forEach(user =>  {
             if (index == getIndex(user.id)) {
@@ -190,6 +190,7 @@ io.on('connection', socket => {
           }
           else { // Pacman can't eat ghosts and is killed
             incrementScore(user.id, 10); // Ghost killed pacman
+            setPrevPosType(user.id, 0); // Ensures that ghost does not drop a dot or pill after moving again
             getLobbyUsers(user.lobby).forEach(user => {
               if (index == getIndex(user.id)) {
                 respawn(gameBoard, user); // Pacman respawns
@@ -220,7 +221,7 @@ io.on('connection', socket => {
       while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * gameBoard.length);
         socket.emit('message', gameBoard[spawn]);
-        foundSpawn = (gameBoard[spawn] == 0); // Break out of while loop if empty cell found
+        foundSpawn = (gameBoard[spawn] == 0 && spawn != getIndex(user.id)); // Break out of while loop if empty cell (or dot cell) found and not in the same cell
       }
       setIndex(user.id, spawn);
       setPrevPosType(user.id, 0);
@@ -228,12 +229,12 @@ io.on('connection', socket => {
     else {
       // Spawn within middle ghost area (indices: min: 188, max: 251)
       var spawn = Math.floor(Math.random() * (251 - 208)) + 208;
-      while (foundSpawn)  {
+      while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * (251 - 208)) + 208;
         foundSpawn = (gameBoard[spawn] == 8); // Break out of while loop if empty lair cell found
       }
       setIndex(user.id, spawn);
-      setPrevPosType(user.id, 0);
+      setPrevPosType(user.id, 8);
     }
     setPrevIndex(user.id, getIndex(user.id));
     gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
@@ -241,7 +242,6 @@ io.on('connection', socket => {
 
   // Handle Pacman eating a pill and becoming super
   function statusChange(user)  {
-    socket.emit('message', 'status changing');
     getLobbyUsers(user.lobby).forEach((user) =>   {
       if (getStatus(user.id) == 0)  {
         setStatus(user.id, 1); // Ghosts are edible and Pacman has pill effect
@@ -337,19 +337,19 @@ io.on('connection', socket => {
       }
 
       setPrevIndex(user.id, getIndex(user.id));
-      // Check if game is over and respond accordingly
-      if (checkGameStatus(gameBoard))
+
+      // Send gameUpdate with new gameBoard to clients
+      io.to(user.lobby).emit('gameUpdate', {
+        lobby: user.lobby,
+        users: getLobbyUsers(user.lobby),
+        gameBoard: gameBoard
+      });
+      if (checkGameStatus(gameBoard))  {
+        // Check if game is over and respond accordingly
         io.to(user.lobby).emit('gameOver', {
           lobby: user.lobby,
           users: getLobbyUsers(user.lobby),
           gameTime: gameTimer
-        });
-      else {
-        // Send gameUpdate with new gameBoard to clients
-        io.to(user.lobby).emit('gameUpdate', {
-          lobby: user.lobby,
-          users: getLobbyUsers(user.lobby),
-          gameBoard: gameBoard
         });
       }
     }
