@@ -171,8 +171,8 @@ function updateScores(users)  {
     if (user.playerRole == 4)
       var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
 
-    scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
-    fakeUsers[user.playerRole - 1] = {username: scoreName};
+    //scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
+    fakeUsers[user.playerRole - 1] = {username: scoreName, id : user.id};
   });
   outputUsers(fakeUsers);
 }
@@ -185,7 +185,9 @@ function outputUsers(users) {
     const li = document.createElement('li');
     li.innerText = user.username;
     li.setAttribute("id", user.username);
-    if (user.username.includes(username)) {
+    console.log(socket.id);
+    console.log(users);
+    if (user.id === socket.id) {
       li.style.fontWeight = "bold";
     }
     userList.appendChild(li);
