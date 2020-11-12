@@ -25,6 +25,7 @@ const { create } = require('hbs');
 
 var gameBoard;
 var gameTimer;
+var statusTimer;
 
 const app = express();
 const server = http.createServer(app);
@@ -137,13 +138,15 @@ io.on('connection', socket => {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
         incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
-          var statusTimer = setTimeout(() => statusChange(user), 10000);
-          if (user.getStatus == 1)  { // Pacman already had pill effect. Simply reset interval
-            socket.emit('message', 'Clearing previous timer and setting a new one');
-            clearTimeout(statusTimer);
+          statusTimer = setTimeout(() => statusChange(user), 10000);
+          if (user.status == 0) { // Only give pacman effect if he doesn't already have it
+            statusChange(user);
             statusChange(statusTimer);
           }
-          else { // Pacman consums pill
+          else {
+            console.log('timer: ' + statusTimer);
+            clearTimeout(statusTimer);
+            console.log('timer: ' + statusTimer);
             statusChange(statusTimer);
           }
         }
