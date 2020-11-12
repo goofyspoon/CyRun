@@ -59,10 +59,8 @@ socket.on('loadBoard', () => {
 
 //io.to(user.lobby).emit('drawGameBoard', (gameBoard));
 socket.on('drawGameBoard',({gameBoard}) =>{
-
   console.log("Received drawGameBoard");
   drawGameBoard(gameBoard);
-
 });
 
 function drawGameBoard(gameBoard){
@@ -74,32 +72,21 @@ function drawGameBoard(gameBoard){
     board.innerHTML = '';
     // First set correct amount of columns based on Grid Size and Cell Size
     board.style.cssText = `grid-template-columns: repeat(${GRID_SIZE}, ${CELL_SIZE}px);`;
-    console.log(gameBoard);
+    //console.log(gameBoard); // Development purposes only
     gameBoard.forEach((square) => {
       const div = document.createElement('div');
       div.classList.add('square', SQUARE_LIST[square]);
       div.style.cssText = `width: ${CELL_SIZE}px; height: ${CELL_SIZE}px;`;
+      // div.innerText = square; // Development purposes only. DELETE THIS
+      div.setAttribute("class", SQUARE_LIST[square]);
       board.appendChild(div);
       grid.push(div);
     });
 }
 
-//socket.broadcast.to(user.lobby).emit('hey');
-socket.on('hey',({})=>{
-  console.log("HEY!");
-});
-
 function rotateDiv(position, degree){
   this.grid[position].style.transform = `rotate({deg}deg)`;
 }
-
-
-// Draw in characters and start timer for game
-socket.on('startGame', (users) => {
-  drawCharacters(users);
-  appendRoles(users);
-  startGame();
-});
 
 // Messages from Server
 socket.on('message', message => {
@@ -111,8 +98,20 @@ socket.on('message', message => {
 
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
-	updateBoard(users, gameBoard);
-})
+  drawGameBoard(gameBoard);
+  updateScores(users);
+});
+
+// gameOver from server
+socket.on('gameOver', ({lobby, users, gameTime}) => {
+  // TO BE IMPLEMENTED
+  // Determine winner and show overall scoreboard
+  // Possibly take users to another page with description of round (time, scoreboard, etc.)
+  // Maybe take in a timer parameter as well?
+  var test = document.createElement('p'); // DELETE THIS
+  test.innerText = 'game time: ' + gameTime + ' seconds'; // DELETE THIS
+  chat.appendChild(test); // DELETE THIS
+});
 
 // Send message
 sendChat.addEventListener('click', (e) => {
@@ -137,10 +136,12 @@ function outputLobbyName(lobby) {
 }
 
 socket.on('setRoles', ({users}) => {
-  appendRoles(users);
+  //appendRoles(users);
+  updateScores(users);
+  document.getElementById("pregameMsg").innerHTML = "Controls: Use the arrow keys to move your character.<br />";
 });
 
-function appendRoles(users){
+/*function appendRoles(users){
    var descendants = userList.getElementsByTagName('li');
    if ( descendants.length > 0){
      for(let i = 0; i < descendants.length; i ++){
@@ -154,7 +155,28 @@ function appendRoles(users){
           descendants[i].textContent += ' - PacMan';
      }
    }
+}*/
+
+function updateScores(users)  {
+  var scores = [0, 0, 0, 0];
+  var fakeUsers = [0, 0, 0, 0];
+  users.forEach(user => {
+    scores[user.playerRole - 1] = user.score;
+    if (user.playerRole == 1)
+      var scoreName = "Red Ghost: " + user.username + "\nScore: " + user.score ;
+    if (user.playerRole == 2)
+      var scoreName = "Blue Ghost: " + user.username + "\nScore: " + user.score;
+    if (user.playerRole == 3)
+      var scoreName = "Orange Ghost: " + user.username + "\nScore: " + user.score;
+    if (user.playerRole == 4)
+      var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
+
+    scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
+    fakeUsers[user.playerRole - 1] = {username: scoreName};
+  });
+  outputUsers(fakeUsers);
 }
+
 
 // Add users list to lobby page
 function outputUsers(users) {
@@ -162,37 +184,28 @@ function outputUsers(users) {
   users.forEach(user => {
     const li = document.createElement('li');
     li.innerText = user.username;
-    if (user.username === username) {
-      li.style.color = "red";
+    li.setAttribute("id", user.username);
+    if (user.username.includes(username)) {
+      li.style.fontWeight = "bold";
     }
     userList.appendChild(li);
   });
 }
 
-function startGame(){
-  var timer = setInterval(updateBoard,100);
-}
-
-function updateBoard(users, gameBoard){
-	drawGameBoard(gameBoard); // redraw board
-  //drawCharacters(users); // redraw characters
-}
-
 this.document.addEventListener('keydown', function(event) {
-  if (event.key == "ArrowLeft") {
-    console.log("Pressed left!");
-    socket.emit('changeDirection', ('left'));
-  }
-  else if (event.key == "ArrowUp") {
-    console.log("Pressed up!");
-    socket.emit('changeDirection', ('up'));
-  }
-  else if (event.key == "ArrowRight") {
-    console.log("Pressed right!");
-    socket.emit('changeDirection', ('right'));
-  }
-  else if (event.key == "ArrowDown") {
-    console.log("Pressed down!");
-    socket.emit('changeDirection', ('down'));
+  event.preventDefault();
+  if (!event.repeat)  { // event.repeat is true if user is holding down key (this causes issues with server)
+    if (event.key == "ArrowLeft") {
+      socket.emit('changeDirection', ('left'));
+    }
+    else if (event.key == "ArrowUp") {
+      socket.emit('changeDirection', ('up'));
+    }
+    else if (event.key == "ArrowRight") {
+      socket.emit('changeDirection', ('right'));
+    }
+    else if (event.key == "ArrowDown") {
+      socket.emit('changeDirection', ('down'));
+    }
   }
 }, true);
