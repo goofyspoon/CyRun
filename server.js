@@ -180,6 +180,7 @@ io.on('connection', socket => {
       }
 
       if (update) {
+        gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id);
         setPrevPosType(user.id, gameBoard[getIndex(user.id)]);
         setPrevIndex(user.id, getIndex(user.id));
         gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
