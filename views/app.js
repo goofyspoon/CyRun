@@ -54,7 +54,6 @@ socket.emit('joinLobby', {username, lobby});
 
 // DEVELOPMENT - should get deleted after the end game works
 function callEnd() {
-  console.log("here");
   socket.emit('simEnd', {lobby : lobby});
 }
 
@@ -74,13 +73,10 @@ socket.on('loadBoard', () => {
 
 //io.to(user.lobby).emit('drawGameBoard', (gameBoard));
 socket.on('drawGameBoard',({users, gameBoard}) =>{
-  //console.log("Received drawGameBoard");
   drawGameBoard(users, gameBoard);
 });
 
 function drawGameBoard(users, gameBoard){
-  //console.log("Drawing gameBoard");
-
   const board = document.querySelector('#game');
   const grid = [];
 
@@ -149,9 +145,6 @@ socket.on('gameOver', ({lobby, users, gameTime}) => {
   winnerText.innerHTML = "The ghosts win!!!";
 
   let spacer = document.createElement('br');
-  // endgamebox.appendChild(spacer);
-  // spacer = document.createElement('br');
-  // endgamebox.appendChild(spacer);
 
   for(let i = 0; i < 4; i ++){
     let p = document.createElement('p');
@@ -163,14 +156,10 @@ socket.on('gameOver', ({lobby, users, gameTime}) => {
       p.innerHTML = "Orange Ghost Score: " + users[i].score;
     else if(users[i].playerRole == 4)
       p.innerHTML = "Pacman Score: " + users[i].score;
-    // spacer.appendChild(p);
     finalScoreboard.appendChild(p);
   }
   gameOver.style.display = "block";
-  // Maybe take in a timer parameter as well?
-  matchTime.innerText = 'Match time: ' + gameTime + ' seconds'; // DELETE THIS
-  // winnerText.appendChild(test); // DELETE THIS
-  // socket.disconnect();
+  matchTime.innerText = 'Match time: ' + gameTime + ' seconds';
 });
 
 // Send message

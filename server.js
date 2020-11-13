@@ -121,7 +121,7 @@ io.on('connection', socket => {
 
     // Begin game
     io.to(user.lobby).emit('setRoles', {users : users});
-    io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
+    io.to(user.lobby).emit('drawGameBoard', ({users : users, gameBoard}));
 
     gameTimer = new Date();
     game(users, gameBoard);
@@ -220,7 +220,6 @@ io.on('connection', socket => {
     gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
   }
   // Unused methods
-  /*
   function addObject(position, object){
     gameBoard[position].classList.add(...classes);
   }
