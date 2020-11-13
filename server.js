@@ -84,9 +84,18 @@ io.on('connection', socket => {
     } // end else statement
   });
 
+  // Choose a random level (1 or 2) and store a copy of that level as gameBoard
   function createGameBoard()  {
-    //gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
-    gameBoard = Constants.LEVEL2.slice();
+    let choice = Math.floor(Math.random() * (3 - 1)) + 1; // max 2 (exclusive) min 1 (inclusive)
+    socket.emit('message', 'Map ' + choice + ' selected');
+    switch (choice) {
+      case 1:
+        gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
+        break;
+      case 2:
+        gameBoard = Constants.LEVEL2.slice();
+        break;
+    }
   }
 
   // Set the roles and starting positions of each player and begin the game
@@ -115,6 +124,7 @@ io.on('connection', socket => {
 
   gameTimer = new Date();
   game(users, gameBoard);
+  console.log('Beginning game');
   }
 
   // Constant updates between clients and server (real-time game)
@@ -188,10 +198,12 @@ io.on('connection', socket => {
         users: getLobbyUsers(users[0].lobby),
         gameTime: gameTimer
       });
+      clearInterval(gameUpdateTimer);
     }
-    console.log('Interval set (220 ms)'); // Development purposes only. DELETE THIS
-    clearInterval(gameUpdateTimer);
-    gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
+    else {
+      clearInterval(gameUpdateTimer);
+      gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
+    }
   }
 
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
@@ -356,6 +368,7 @@ io.on('connection', socket => {
 
   // Runs when client disconnects
   socket.on('disconnect', () => {
+    clearInterval(gameUpdateTimer); // Stop constant server-client communication
     const user = userLeave(socket.id);
 
     if (user) {
