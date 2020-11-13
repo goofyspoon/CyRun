@@ -58,13 +58,13 @@ socket.on('loadBoard', () => {
 });
 
 //io.to(user.lobby).emit('drawGameBoard', (gameBoard));
-socket.on('drawGameBoard',({gameBoard}) =>{
-  console.log("Received drawGameBoard");
-  drawGameBoard(gameBoard);
+socket.on('drawGameBoard',({users, gameBoard}) =>{
+  //console.log("Received drawGameBoard");
+  drawGameBoard(users, gameBoard);
 });
 
-function drawGameBoard(gameBoard){
-  console.log("Drawing gameBoard");
+function drawGameBoard(users, gameBoard){
+  //console.log("Drawing gameBoard");
 
   const board = document.querySelector('#game');
   const grid = [];
@@ -77,6 +77,25 @@ function drawGameBoard(gameBoard){
       const div = document.createElement('div');
       div.classList.add('square', SQUARE_LIST[square]);
       div.style.cssText = `width: ${CELL_SIZE}px; height: ${CELL_SIZE}px;`;
+      if (SQUARE_LIST[square] == SQUARE_TYPE.PACMAN)  { // customize pacman
+        users.forEach(user => {
+          if (user.playerRole == 4 && user.direction != 0) { // Pacman rotates depending on direction
+            var rotation = 0;
+            if (user.direction == -1) rotation = 180; // facing left
+            else if (user.direction == 20) rotation = 90; // facing up
+            else if (user.direction == -20) rotation = 270; // facing down
+            div.style.transform = "rotate(" + rotation + "deg)";
+          }
+        });
+      } // Customize the three ghosts: (make the ghosts flash if pacman ate pill)
+      else if (SQUARE_LIST[square] == SQUARE_TYPE.GHOST1 || SQUARE_LIST[square] == SQUARE_TYPE.GHOST2 || SQUARE_LIST[square] == SQUARE_TYPE.GHOST3)  {
+        users.forEach(user => {
+          if (user.status == 1) {
+            div.style.backgroundImage = "url('edible_ghost.png')";
+            div.style.filter = "drop-shadow(1px 4px 1px #616161);"
+          }
+        });
+      }
       // div.innerText = square; // Development purposes only. DELETE THIS
       div.setAttribute("class", SQUARE_LIST[square]);
       board.appendChild(div);
@@ -98,7 +117,7 @@ socket.on('message', message => {
 
 // gameUpdates from server (i.e. player position change)
 socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
-  drawGameBoard(gameBoard);
+  drawGameBoard(users, gameBoard);
   updateScores(users);
 });
 

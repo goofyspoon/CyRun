@@ -143,6 +143,7 @@
   background-color: black;
   background-image: url('red_ghost.png');
   background-size: cover;
+  filter: drop-shadow(1px 4px 1px #4d4d4d);
 }
 
 .ghost2 {
@@ -150,6 +151,7 @@
   background-color: black;
   background-image: url('blue_ghost.png');
   background-size: cover;
+  filter: drop-shadow(1px 4px 1px #4d4d4d);
 }
 
 .ghost3 {
@@ -157,6 +159,7 @@
   background-color: black;
   background-image: url('orange_ghost.png');
   background-size: cover;
+  filter: drop-shadow(1px 4px 1px #4d4d4d);
 }
 
 .pacman {

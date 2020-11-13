@@ -111,7 +111,7 @@ io.on('connection', socket => {
 
   // Begin game
   io.to(user.lobby).emit('setRoles', {users : users});
-  io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
+  io.to(user.lobby).emit('drawGameBoard', ({users: users, gameBoard: gameBoard}));
 
   gameTimer = new Date();
   game(users, gameBoard);
