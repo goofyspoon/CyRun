@@ -121,10 +121,8 @@ io.on('connection', socket => {
   function game(users, gameBoard) {
     users.forEach(user => {
       var update = false;
-      if (getDirection(user.id) == 0) {
-        // Player is not moving
-      }
-      else if (getDirection(user.id) == -20)  { // Player is moving up
+
+      if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
             setIndex(user.id, (getIndex(user.id) - 20));
@@ -195,20 +193,6 @@ io.on('connection', socket => {
     clearInterval(gameUpdateTimer);
     gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
   }
-  // Unused methods
-  /*
-  function addObject(position, object){
-    gameBoard[position].classList.add(...classes);
-  }
-
-  function removeObject(position, object){
-    gameBoard[position].classList.remove(...classes);
-  }
-
-  function objectExist(position, object){
-    return gameBoard[position].classList.contains(object);
-  }
-  */
 
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
   function checkCollisions(gameBoard, index, user) {
@@ -352,8 +336,18 @@ io.on('connection', socket => {
     return true;
   }
 
-  // Handle player direction changes (keypresses)
+  // Handle player direction changes (keypresses). Collision handling is done within the game() function
   socket.on('changeDirection', (direction) => {
+    const user = getCurrentUser(socket.id);
+    // Set the user (server-side) direction to direction from parameter.
+    // Only sets the users direction if the user is not trying to move into a wall
+    if (direction === 'up' && gameBoard[getIndex(user.id) - 20] != 1) setDirection(user.id, -20);
+    else if (direction === 'right' && gameBoard[getIndex(user.id) + 1] != 1) setDirection(user.id, 1);
+    else if (direction === 'down' && gameBoard[getIndex(user.id) + 20] != 1) setDirection(user.id, 20);
+    else if (direction === 'left' && gameBoard[getIndex(user.id) - 1] != 1) setDirection(user.id, -1);
+
+    // I think what is above is sufficient (less server updates) - Christian
+    /*
     const user = getCurrentUser(socket.id);
     const prevType = getPrevPosType(user.id);
     var update = false;
@@ -418,10 +412,8 @@ io.on('connection', socket => {
 
       setPrevIndex(user.id, getIndex(user.id));
 
-      console.log('clearing interval (user key press)'); // Development purposes only. DELETE THIS
-      clearInterval(gameUpdateTimer);
       gameUpdateTimer = setInterval(function() {game(getLobbyUsers(user.lobby), gameBoard);}, 220);
-    }
+    }*/
   }); // End handle player movement
 
   // Lobby chat
