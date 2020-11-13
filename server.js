@@ -84,16 +84,25 @@ io.on('connection', socket => {
     } // end else statement
   });
 
+  // Choose a random level (1 or 2) and store a copy of that level as gameBoard
   function createGameBoard()  {
-    gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
-    //gameBoard = Constants.LEVEL2.slice();
+    let choice = Math.floor(Math.random() * (3 - 1)) + 1; // max 2 (exclusive) min 1 (inclusive)
+    socket.emit('message', 'Map ' + choice + ' selected');
+    switch (choice) {
+      case 1:
+        gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
+        break;
+      case 2:
+        gameBoard = Constants.LEVEL2.slice();
+        break;
+    }
   }
 
   // Set the roles and starting positions of each player and begin the game
   function beginGame(user, users)  {
     for (let i = 0; i < 4; i++) {
       setPlayerNum(users[i].id, i + 1);
-      setDirection(users[i].id, 0, 0);
+      setDirection(users[i].id, 0);
 
     if (i < 3) { // Players 0, 1, & 2 are ghosts
         respawn(gameBoard, users[i]);
@@ -111,20 +120,19 @@ io.on('connection', socket => {
 
   // Begin game
   io.to(user.lobby).emit('setRoles', {users : users});
-  io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
+  io.to(user.lobby).emit('drawGameBoard', ({users: users, gameBoard: gameBoard}));
 
   gameTimer = new Date();
   game(users, gameBoard);
+  console.log('Beginning game');
   }
 
   // Constant updates between clients and server (real-time game)
   function game(users, gameBoard) {
     users.forEach(user => {
       var update = false;
-      if (getDirection(user.id) == 0) {
-        // Player is not moving
-      }
-      else if (getDirection(user.id) == -20)  { // Player is moving up
+
+      if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
             setIndex(user.id, (getIndex(user.id) - 20));
@@ -190,25 +198,13 @@ io.on('connection', socket => {
         users: getLobbyUsers(users[0].lobby),
         gameTime: gameTimer
       });
+      clearInterval(gameUpdateTimer);
     }
-    console.log('Interval set (220 ms)'); // Development purposes only. DELETE THIS
-    clearInterval(gameUpdateTimer);
-    gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
+    else {
+      clearInterval(gameUpdateTimer);
+      gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
+    }
   }
-  // Unused methods
-  /*
-  function addObject(position, object){
-    gameBoard[position].classList.add(...classes);
-  }
-
-  function removeObject(position, object){
-    gameBoard[position].classList.remove(...classes);
-  }
-
-  function objectExist(position, object){
-    return gameBoard[position].classList.contains(object);
-  }
-  */
 
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
   function checkCollisions(gameBoard, index, user) {
@@ -352,76 +348,15 @@ io.on('connection', socket => {
     return true;
   }
 
-  // Handle player direction changes (keypresses)
+  // Handle player direction changes (keypresses). Collision handling is done within the game() function
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
-    const prevType = getPrevPosType(user.id);
-    var update = false;
-    if (direction === 'up') {
-      if (getIndex(user.id) > 19) { // Check that user is not in top row (there exists an index above)
-        if (gameBoard[getIndex(user.id) - 20] != 1) { // Check if index above is a wall
-          if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
-            setDirection(user.id, -20); // Set player direction to up
-            //setIndex(user.id, getIndex(user.id) - 20);
-            update = true;
-          }
-        }
-      }
-    }
-    else if (direction === 'down') {
-      if (getIndex(user.id) < 439) { // Check that user is not in bottom row (there exists an index below)
-        if (gameBoard[getIndex(user.id) + 20] != 1) { // Check if index below is a wall
-          if (user.playerRole != 4 || gameBoard[getIndex(user.id) + 20] != 8) { // Check that pacman is not moving into ghost lair
-            if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
-              setDirection(user.id, 20); // Set player direction to down
-              //setIndex(user.id, getIndex(user.id) + 20);
-              update = true;
-            }
-          }
-        }
-      }
-    }
-    else if (direction === 'left') {
-      if (gameBoard[getIndex(user.id) - 1] != 1)  { // Check if index to the left is a wall
-        if (checkCollisions(gameBoard, (getIndex(user.id) - 1), user))  {
-          setDirection(user.id, -1); // Set player direction to left
-          //setIndex(user.id, getIndex(user.id) - 1);
-          update = true;
-        }
-      }
-    }
-    else if (direction === 'right')  {
-      if (gameBoard[getIndex(user.id) + 1] != 1)  { // Check if index to the right is a wall
-        if (checkCollisions(gameBoard, (getIndex(user.id) + 1), user))  {
-          setDirection(user.id, 1); // Set player direction to right
-          //setIndex(user.id, getIndex(user.id) + 1);
-          update = true;
-        }
-      }
-    }
-
-    // Send new Player position to all users
-    if (update)  { // Server only emits gameBoard update if player movement was valid
-      gameBoard[getPrevIndex(user.id)] = prevType; // Set previous position to blank
-      if (getCurrentUser(user.id).playerRole === 1) {
-        gameBoard[getIndex(user.id)] = 3;
-      }
-      else if (getCurrentUser(user.id).playerRole === 2) {
-        gameBoard[getIndex(user.id)] = 4;
-      }
-      else if (getCurrentUser(user.id).playerRole === 3) {
-        gameBoard[getIndex(user.id)] = 5;
-      }
-      else if (getCurrentUser(user.id).playerRole === 4) {
-        gameBoard[getIndex(user.id)] = 7;
-      }
-
-      setPrevIndex(user.id, getIndex(user.id));
-
-      console.log('clearing interval (user key press)'); // Development purposes only. DELETE THIS
-      clearInterval(gameUpdateTimer);
-      gameUpdateTimer = setInterval(function() {game(getLobbyUsers(user.lobby), gameBoard);}, 220);
-    }
+    // Set the user (server-side) direction to direction from parameter.
+    // Only sets the users direction if the user is not trying to move into a wall
+    if (direction === 'up' && gameBoard[getIndex(user.id) - 20] != 1) setDirection(user.id, -20);
+    else if (direction === 'right' && gameBoard[getIndex(user.id) + 1] != 1) setDirection(user.id, 1);
+    else if (direction === 'down' && gameBoard[getIndex(user.id) + 20] != 1) setDirection(user.id, 20);
+    else if (direction === 'left' && gameBoard[getIndex(user.id) - 1] != 1) setDirection(user.id, -1);
   }); // End handle player movement
 
   // Lobby chat
@@ -433,6 +368,7 @@ io.on('connection', socket => {
 
   // Runs when client disconnects
   socket.on('disconnect', () => {
+    clearInterval(gameUpdateTimer); // Stop constant server-client communication
     const user = userLeave(socket.id);
 
     if (user) {
