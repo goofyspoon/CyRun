@@ -17,6 +17,8 @@ gameOver.style.display = "none";
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
 
+var playerEnabled = -1;
+
 const SQUARE_TYPE = {
   BLANK: 'blank',
   WALL: 'wall',
@@ -58,6 +60,9 @@ function callEnd() {
 
 // Get lobby and Users
 socket.on('lobbyUsers', ({lobby, users}) => {
+  let countdown = document.getElementById('countdown');
+  countdown.innerHTML = "Waiting for more players...";
+
   outputLobbyName(lobby);
   outputUsers(users);
 });
@@ -115,6 +120,7 @@ socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
 // gameOver from server
 socket.on('gameOver', ({lobby, users, gameTime}) => {
   socket.emit('ackGameEnd', {id : socket.id});
+  playerEnabled = -1;
   let ghostTotal = 0;
   for(let i = 0; i < 3; i++)
     ghostTotal += users[i].score;
@@ -172,9 +178,28 @@ function outputLobbyName(lobby) {
 
 socket.on('setRoles', ({users}) => {
   //appendRoles(users);
+  startCountDown();
   updateScores(users);
   document.getElementById("pregameMsg").innerHTML = "Controls: Use the arrow keys to move your character.<br />";
 });
+
+function startCountDown(){
+  //Start 5 second countdown to start game
+  let countdown = document.getElementById('countdown');
+  let second = 5;
+  var interval = setInterval(function() {
+    if(second > 0)
+      countdown.innerHTML = "Match starting in: " + second;
+    else if(second == 0)
+      countdown.innerHTML = "GO!";
+    else 
+      clearInterval(interval);
+    second--;
+  }, 1000);
+  
+  //Enable player so that they can send direction update to server
+  playerEnabled = 1;
+}
 
 /*function appendRoles(users){
    var descendants = userList.getElementsByTagName('li');
@@ -230,17 +255,19 @@ function outputUsers(users) {
 this.document.addEventListener('keydown', function(event) {
   event.preventDefault();
   if (!event.repeat)  { // event.repeat is true if user is holding down key (this causes issues with server)
-    if (event.key == "ArrowLeft") {
-      socket.emit('changeDirection', ('left'));
-    }
-    else if (event.key == "ArrowUp") {
-      socket.emit('changeDirection', ('up'));
-    }
-    else if (event.key == "ArrowRight") {
-      socket.emit('changeDirection', ('right'));
-    }
-    else if (event.key == "ArrowDown") {
-      socket.emit('changeDirection', ('down'));
+    if(playerEnabled != -1){ // check to make sure that the game has started
+      if (event.key == "ArrowLeft") {
+        socket.emit('changeDirection', ('left'));
+      }
+      else if (event.key == "ArrowUp") {
+        socket.emit('changeDirection', ('up'));
+      }
+      else if (event.key == "ArrowRight") {
+        socket.emit('changeDirection', ('right'));
+      }
+      else if (event.key == "ArrowDown") {
+        socket.emit('changeDirection', ('down'));
+      }
     }
   }
 }, true);

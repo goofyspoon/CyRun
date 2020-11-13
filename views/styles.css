@@ -20,6 +20,7 @@ ul {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding-bottom: 30px;
 }
 
 #game {
@@ -88,7 +89,6 @@ ul {
   list-style-type: none;
   list-style-position: inside;
 }
-
 
 .hide {
   display: none;
