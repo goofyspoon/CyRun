@@ -142,7 +142,7 @@ io.on('connection', socket => {
       }
       else if (getDirection(user.id) == 1)  { // Player is moving to the Right
         if (getIndex(user.id) == 239) { // Player is passing through portal on right side
-          if (checkCollisions(gameBoard, 239, user)) {
+          if (checkCollisions(gameBoard, 220, user)) {
             setIndex(user.id, 220);
             setDirection(user.id, 1);
             update = true;
@@ -165,7 +165,7 @@ io.on('connection', socket => {
       }
       else if (getDirection(user.id) == -1)  { // Player is moving to the left
         if (getIndex(user.id) == 220) { // Player is passing through portal on right side
-          if (checkCollisions(gameBoard, 220, user)) {
+          if (checkCollisions(gameBoard, 239, user)) {
             setIndex(user.id, 239);
             setDirection(user.id, -1);
             update = true;
