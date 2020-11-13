@@ -364,9 +364,8 @@ io.on('connection', socket => {
 
   //DEVELOPMENT feature and should be taken out for demo/final product
   socket.on('simEnd', (lobby) => {
-    console.log(lobby);
     let users = getLobbyUsers(lobby.lobby);
-    console.log(users);
+    console.log(gameTimer);
     io.to(users[0].lobby).emit('gameOver', {
       lobby: users[0].lobby,
       users: getLobbyUsers(users[0].lobby),

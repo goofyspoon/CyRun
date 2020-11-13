@@ -7,7 +7,10 @@ const chat = document.getElementById('chat');
 const chatbox = document.getElementById('chatbox')
 const sendChat = document.getElementById('send');
 const gameGrid = document.querySelector('#game');
-const gameOver = document.getElementById("endgameboard");
+const winnerText = document.getElementById('winner');
+const finalScoreboard = document.getElementById('finalScoreboard');
+const matchTime = document.getElementById('matchTime');
+const gameOver = document.getElementById('endgameboard');
 gameOver.style.display = "none";
 
 
@@ -116,14 +119,14 @@ socket.on('gameOver', ({lobby, users, gameTime}) => {
   for(let i = 0; i < 3; i++)
     ghostTotal += users[i].score;
   if(users[3].score > ghostTotal)
-    document.getElementById("winner").innerHTML = "Pacman wins!!!";
+  winnerText.innerHTML = "Pacman wins!!!";
   else
-    document.getElementById("winner").innerHTML = "The ghosts win!!!";
+  winnerText.innerHTML = "The ghosts win!!!";
 
   let spacer = document.createElement('br');
-  document.getElementById("winner").appendChild(spacer);
-  spacer = document.createElement('br');
-  document.getElementById("winner").appendChild(spacer);
+  // endgamebox.appendChild(spacer);
+  // spacer = document.createElement('br');
+  // endgamebox.appendChild(spacer);
 
   for(let i = 0; i < 4; i ++){
     let p = document.createElement('p');
@@ -135,14 +138,13 @@ socket.on('gameOver', ({lobby, users, gameTime}) => {
       p.innerHTML = "Orange Ghost Score: " + users[i].score;
     else if(users[i].playerRole == 4)
       p.innerHTML = "Pacman Score: " + users[i].score;
-    spacer.appendChild(p);
-    document.getElementById("winner").appendChild(p);
+    // spacer.appendChild(p);
+    finalScoreboard.appendChild(p);
   }
   gameOver.style.display = "block";
   // Maybe take in a timer parameter as well?
-  var test = document.createElement('p'); // DELETE THIS
-  test.innerText = 'game time: ' + gameTime + ' seconds'; // DELETE THIS
-  chat.appendChild(test); // DELETE THIS
+  matchTime.innerText = 'Match time: ' + gameTime + ' seconds'; // DELETE THIS
+  // winnerText.appendChild(test); // DELETE THIS
   // socket.disconnect();
 });
 
