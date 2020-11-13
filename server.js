@@ -45,11 +45,11 @@ io.on('connection', socket => {
     // Check the lobby to ensure there will not be two users with the same name or there are already 4 users in the lobby
     var entranceFailure = false;
     let usersInLobby = getLobbyUsers(lobby);
-	if (usersInLobby.length >= 4)	{
-    console.log("Rejected player because lobby is full.");
-		socket.emit('message', 'The lobby, ' + lobby + ', is full')
-		entranceFailure = true;
-	}
+    if (usersInLobby.length >= 4)	{
+      console.log("Rejected player because lobby is full.");
+      socket.emit('message', 'The lobby, ' + lobby + ', is full')
+      entranceFailure = true;
+    }
     for (var i = 0; i < usersInLobby.length && !(entranceFailure); i++) {
       if (usersInLobby[i].username === username) {
         socket.emit('message', 'There already exists a user in lobby: \"' + lobby + '\" with the name: \"' + username + '\"');
@@ -351,6 +351,18 @@ io.on('connection', socket => {
     gameTimer = Math.round(gameTimer);
     return true;
   }
+
+  //DEVELOPMENT feature and should be taken out for demo/final product
+  socket.on('simEnd', (lobby) => {
+    console.log(lobby);
+    let users = getLobbyUsers(lobby.lobby);
+    console.log(users);
+    io.to(users[0].lobby).emit('gameOver', {
+      lobby: users[0].lobby,
+      users: getLobbyUsers(users[0].lobby),
+      gameTime: gameTimer
+    });
+  });
 
   // Handle player direction changes (keypresses)
   socket.on('changeDirection', (direction) => {

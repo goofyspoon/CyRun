@@ -6,7 +6,6 @@ const leaveLobbyBtn = document.getElementById('leave');
 const chat = document.getElementById('chat');
 const chatbox = document.getElementById('chatbox')
 const sendChat = document.getElementById('send');
-//const gameGrid = document.getElementById('canvas');
 const gameGrid = document.querySelector('#game');
 
 
@@ -45,6 +44,12 @@ const {username, lobby} = Qs.parse(location.search, {ignoreQueryPrefix: true});
 
 // Join lobby
 socket.emit('joinLobby', {username, lobby});
+
+// DEVELOPMENT - should get deleted after the end game works
+function callEnd() {
+  console.log("here");
+  socket.emit('simEnd', {lobby : lobby});
+}
 
 // Get lobby and Users
 socket.on('lobbyUsers', ({lobby, users}) => {
@@ -104,6 +109,7 @@ socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
 
 // gameOver from server
 socket.on('gameOver', ({lobby, users, gameTime}) => {
+  document.getElementById("overlay").style.display = "block";
   // TO BE IMPLEMENTED
   // Determine winner and show overall scoreboard
   // Possibly take users to another page with description of round (time, scoreboard, etc.)
@@ -185,8 +191,6 @@ function outputUsers(users) {
     const li = document.createElement('li');
     li.innerText = user.username;
     li.setAttribute("id", user.username);
-    console.log(socket.id);
-    console.log(users);
     if (user.id === socket.id) {
       li.style.fontWeight = "bold";
     }

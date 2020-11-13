@@ -13,6 +13,19 @@
   </a>
 </nav>
 
+<div id="overlay">
+  <div id="text">Overlay Text</div>
+</div>
+
+<script>
+  function off() {
+    document.getElementById("overlay").style.display = "none";
+  }
+</script>
+
+<!--This button is purely for development purposes. It will trigger the game in the same way as if all pac dots have been eaten-->
+<button onclick="callEnd()">End Game Sim</button>
+
 <div class="container-fluid">
   <div class="row">
     <!-- Left Column -->
@@ -33,7 +46,6 @@
 
     <!-- Middle Column -->
     <div class="col-lg-6 text-center" id="wrapper">
-      <!--<canvas id="canvas" width="550" height="650" style=" border:5px solid #FFFF00;"></canvas>-->
       <div id="game"></div>
     </div>
     <!-- Right Column -->
