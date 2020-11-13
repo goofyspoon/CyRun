@@ -212,8 +212,8 @@ function outputUsers(users) {
 }
 
 this.document.addEventListener('keydown', function(event) {
-  event.preventDefault();
-  if (!event.repeat)  { // event.repeat is true if user is holding down key (this causes issues with server)
+  // event.repeat is true if user is holding down key (this causes issues with server)
+  if (!event.repeat)  {
     if (event.key == "ArrowLeft") {
       socket.emit('changeDirection', ('left'));
     }

@@ -85,15 +85,15 @@ io.on('connection', socket => {
   });
 
   function createGameBoard()  {
-    gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
-    //gameBoard = Constants.LEVEL2.slice();
+    //gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
+    gameBoard = Constants.LEVEL2.slice();
   }
 
   // Set the roles and starting positions of each player and begin the game
   function beginGame(user, users)  {
     for (let i = 0; i < 4; i++) {
       setPlayerNum(users[i].id, i + 1);
-      setDirection(users[i].id, 0, 0);
+      setDirection(users[i].id, 0);
 
     if (i < 3) { // Players 0, 1, & 2 are ghosts
         respawn(gameBoard, users[i]);
