@@ -64,7 +64,10 @@ function setIndex(id, i)  {
 
 // Get the direction of a user (0 none, -20 up, 1 right, 20 down, -1 left)
 function getDirection(id) {
-  return getCurrentUser(id).direction;
+  if(getCurrentUser(id) != undefined)
+    return getCurrentUser(id).direction;
+  else
+    return -2;
 }
 
 // Set the direction of a user (0 none, -20 up, 1 right, 20 down, -1 left)

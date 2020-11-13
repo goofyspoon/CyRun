@@ -13,15 +13,23 @@
   </a>
 </nav>
 
-<div id="overlay">
-  <div id="text">Overlay Text</div>
+<div id="endgameboard" class="rounded border border-dark bg-light border-5 p-2">
+  <nav class="navbar navbar-light bg-dark">
+    <a class="navbar-brand mx-auto">
+      <img height="48px" src="gameover.png">
+    </a>
+  </nav><br><br>
+  <h4 id="winner"></h4>
+  <form action="index.html" class="form-group">
+    <button type="submit" id="submit" class="btn btn-primary">Return to main menu</button>
+</form>
 </div>
 
-<script>
+<!-- <script>
   function off() {
-    document.getElementById("overlay").style.display = "none";
+    document.getElementById("endgameboard").style.display = "none";
   }
-</script>
+</script> -->
 
 <!--This button is purely for development purposes. It will trigger the game in the same way as if all pac dots have been eaten-->
 <button onclick="callEnd()">End Game Sim</button>

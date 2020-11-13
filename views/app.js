@@ -7,6 +7,8 @@ const chat = document.getElementById('chat');
 const chatbox = document.getElementById('chatbox')
 const sendChat = document.getElementById('send');
 const gameGrid = document.querySelector('#game');
+const gameOver = document.getElementById("endgameboard");
+gameOver.style.display = "none";
 
 
 const GRID_SIZE = 20;
@@ -109,14 +111,39 @@ socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
 
 // gameOver from server
 socket.on('gameOver', ({lobby, users, gameTime}) => {
-  document.getElementById("overlay").style.display = "block";
-  // TO BE IMPLEMENTED
-  // Determine winner and show overall scoreboard
-  // Possibly take users to another page with description of round (time, scoreboard, etc.)
+  socket.emit('ackGameEnd', {id : socket.id});
+  let ghostTotal = 0;
+  for(let i = 0; i < 3; i++)
+    ghostTotal += users[i].score;
+  if(users[3].score > ghostTotal)
+    document.getElementById("winner").innerHTML = "Pacman wins!!!";
+  else
+    document.getElementById("winner").innerHTML = "The ghosts win!!!";
+
+  let spacer = document.createElement('br');
+  document.getElementById("winner").appendChild(spacer);
+  spacer = document.createElement('br');
+  document.getElementById("winner").appendChild(spacer);
+
+  for(let i = 0; i < 4; i ++){
+    let p = document.createElement('p');
+    if(users[i].playerRole == 1)
+      p.innerHTML = "Red Ghost Score: " + users[i].score;
+    else if(users[i].playerRole == 2)
+      p.innerHTML = "Blue Ghost Score: " + users[i].score;
+    else if(users[i].playerRole == 3)
+      p.innerHTML = "Orange Ghost Score: " + users[i].score;
+    else if(users[i].playerRole == 4)
+      p.innerHTML = "Pacman Score: " + users[i].score;
+    spacer.appendChild(p);
+    document.getElementById("winner").appendChild(p);
+  }
+  gameOver.style.display = "block";
   // Maybe take in a timer parameter as well?
   var test = document.createElement('p'); // DELETE THIS
   test.innerText = 'game time: ' + gameTime + ' seconds'; // DELETE THIS
   chat.appendChild(test); // DELETE THIS
+  // socket.disconnect();
 });
 
 // Send message

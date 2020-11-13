@@ -95,33 +95,43 @@ io.on('connection', socket => {
       setPlayerNum(users[i].id, i + 1);
       setDirection(users[i].id, 0, 0);
 
-    if (i < 3) { // Players 0, 1, & 2 are ghosts
-        respawn(gameBoard, users[i]);
-        setPrevIndex(users[i].id, getIndex(users[i].id));
-        gameBoard[getIndex(users[i].id)] = i + 3;
-        setPrevPosType(users[i].id, 8);
-      } else  { // Last player will be pacman
+      if (i < 3) { // Players 0, 1, & 2 are ghosts
+          respawn(gameBoard, users[i]);
+          setPrevIndex(users[i].id, getIndex(users[i].id));
+          gameBoard[getIndex(users[i].id)] = i + 3;
+          setPrevPosType(users[i].id, 8);
+        } 
+      else  { // Last player will be pacman
         var pacmanStart = Math.floor(Math.random() * (292 - 288)) + 288;
         setIndex(users[i].id, pacmanStart);
         setPrevIndex(users[i].id, pacmanStart);
         gameBoard[getIndex(users[i].id)] = 7;
         setPrevPosType(users[i].id, 0);
       }
+    }
+
+    // Begin game
+    io.to(user.lobby).emit('setRoles', {users : users});
+    io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
+
+    gameTimer = new Date();
+    game(users, gameBoard);
   }
 
-  // Begin game
-  io.to(user.lobby).emit('setRoles', {users : users});
-  io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
-
-  gameTimer = new Date();
-  game(users, gameBoard);
-  }
+  
+  socket.on('ackGameEnd', (id) => {
+    userLeave(id);
+    socket.disconnect();
+  });
 
   // Constant updates between clients and server (real-time game)
   function game(users, gameBoard) {
     users.forEach(user => {
       var update = false;
-      if (getDirection(user.id) == 0) {
+      // console.log(user);
+      if(getDirection(user.id) == -2)
+        return;
+      else if (getDirection(user.id) == 0) {
         // Player is not moving
       }
       else if (getDirection(user.id) == -20)  { // Player is moving up
@@ -191,7 +201,7 @@ io.on('connection', socket => {
         gameTime: gameTimer
       });
     }
-    console.log('Interval set (220 ms)'); // Development purposes only. DELETE THIS
+    // console.log('Interval set (220 ms)'); // Development purposes only. DELETE THIS
     clearInterval(gameUpdateTimer);
     gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
   }

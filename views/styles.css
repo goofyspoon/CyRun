@@ -2,6 +2,9 @@
   box-sizing: border-box;
 }
 
+ul {
+  list-style-type: none;
+}
 /* Create three unequal columns that floats next to each other */
 
 .border-5{
@@ -41,18 +44,19 @@
   font-size: 1.5rem;
 }
 
-#overlay {
+#endgameboard {
+  text-align: center;
   align-items: center;
   justify-content: center;
   position: fixed; /* Sit on top of the page content */
   display: none; /* Hidden by default */
-  width: 60%; /* Full width (cover the whole page) */
-  height: 65%; /* Full height (cover the whole page) */
-  top: 0;
-  left: 20%;
-  right: 20%;
+  width: 40%; /* Full width (cover the whole page) */
+  height: 60%; /* Full height (cover the whole page) */
+  top: 20%;
+  left: 30%;
+  right: 30%;
   bottom: 0;
-  background-color: rgb(255, 255, 255); /* Black background with opacity */
+  background-color: lightgray; /* Black background with opacity */
   z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
   cursor: pointer; /* Add a pointer on hover */
 }
