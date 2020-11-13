@@ -135,7 +135,7 @@ socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
 // gameOver from server
 socket.on('gameOver', ({lobby, users, gameTime}) => {
   socket.emit('ackGameEnd', {id : socket.id});
-  playerEnabled = -1;
+  playerEnabled = -1; // Player movement disabled
   let ghostTotal = 0;
   for(let i = 0; i < 3; i++)
     ghostTotal += users[i].score;
@@ -192,42 +192,25 @@ socket.on('setRoles', ({users}) => {
 });
 
 function startCountDown(){
-  //Start 5 second countdown to start game
+  // Start 5 second countdown to start game
   let countdown = document.getElementById('countdown');
   let second = 5;
   var interval = setInterval(function() {
     if(second > 0)
       countdown.innerHTML = "Match starting in: " + second;
-    else if(second == 0)
+    else if(second == 0)  {
       countdown.innerHTML = "GO!";
-    else 
+      playerEnabled = 1; // Enable player so that they can send direction update to server
+    }
+    else
       clearInterval(interval);
     second--;
   }, 1000);
-  
-  //Enable player so that they can send direction update to server
-  playerEnabled = 1;
 }
-
-/*function appendRoles(users){
-   var descendants = userList.getElementsByTagName('li');
-   if ( descendants.length > 0){
-     for(let i = 0; i < descendants.length; i ++){
-       if(users[i].playerRole == 1)
-          descendants[i].textContent += ' - Red Ghost';
-       else if(users[i].playerRole == 2)
-          descendants[i].textContent += ' - Blue Ghost';
-       else if(users[i].playerRole == 3)
-          descendants[i].textContent += ' - Orange Ghost';
-       else if(users[i].playerRole == 4)
-          descendants[i].textContent += ' - PacMan';
-     }
-   }
-}*/
 
 function updateScores(users)  {
   var scores = [0, 0, 0, 0];
-  var fakeUsers = [0, 0, 0, 0];
+  var usersWithScore = [0, 0, 0, 0];
   users.forEach(user => {
     scores[user.playerRole - 1] = user.score;
     if (user.playerRole == 1)
@@ -239,10 +222,9 @@ function updateScores(users)  {
     if (user.playerRole == 4)
       var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
 
-    //scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
-    fakeUsers[user.playerRole - 1] = {username: scoreName, id : user.id};
+    usersWithScore[user.playerRole - 1] = {username: scoreName, id : user.id};
   });
-  outputUsers(fakeUsers);
+  outputUsers(usersWithScore);
 }
 
 

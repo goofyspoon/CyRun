@@ -40,7 +40,6 @@ app.use(express.static('views')); // Set static folder to /views
 
 // Run when client connects
 io.on('connection', socket => {
-  console.log('New socket connection', socket.id); // Development purposes only. Delete this.
   socket.on('joinLobby', ({username, lobby}) => {
     // Check the lobby to ensure there will not be two users with the same name or there are already 4 users in the lobby
     var entranceFailure = false;
@@ -109,7 +108,7 @@ io.on('connection', socket => {
           setPrevIndex(users[i].id, getIndex(users[i].id));
           gameBoard[getIndex(users[i].id)] = i + 3;
           setPrevPosType(users[i].id, 8);
-        } 
+        }
       else  { // Last player will be pacman
         var pacmanStart = Math.floor(Math.random() * (292 - 288)) + 288;
         setIndex(users[i].id, pacmanStart);
@@ -123,11 +122,14 @@ io.on('connection', socket => {
     io.to(user.lobby).emit('setRoles', {users : users});
     io.to(user.lobby).emit('drawGameBoard', ({users : users, gameBoard}));
 
-    gameTimer = new Date();
-    game(users, gameBoard);
+    // wait 5 seconds to begin game
+    setInterval(function()  {
+      gameTimer = new Date();
+      game(users, gameBoard);
+    }, 5000);
   }
 
-  
+
   socket.on('ackGameEnd', (id) => {
     userLeave(id);
     socket.disconnect();
@@ -215,21 +217,6 @@ io.on('connection', socket => {
       clearInterval(gameUpdateTimer);
       gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
     }
-    // console.log('Interval set (220 ms)'); // Development purposes only. DELETE THIS
-    clearInterval(gameUpdateTimer);
-    gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
-  }
-  // Unused methods
-  function addObject(position, object){
-    gameBoard[position].classList.add(...classes);
-  }
-
-  function removeObject(position, object){
-    gameBoard[position].classList.remove(...classes);
-  }
-
-  function objectExist(position, object){
-    return gameBoard[position].classList.contains(object);
   }
 
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
@@ -385,6 +372,9 @@ io.on('connection', socket => {
   //DEVELOPMENT feature and should be taken out for demo/final product
   socket.on('simEnd', (lobby) => {
     let users = getLobbyUsers(lobby.lobby);
+    gameTimer = (new Date()) - gameTimer;
+    gameTimer /= 1000; //Strip the ms
+    gameTimer = Math.round(gameTimer);
     console.log(gameTimer);
     io.to(users[0].lobby).emit('gameOver', {
       lobby: users[0].lobby,
