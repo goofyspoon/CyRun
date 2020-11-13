@@ -131,12 +131,10 @@ io.on('connection', socket => {
   function game(users, gameBoard) {
     users.forEach(user => {
       var update = false;
-      var prevPosType = getPrevPosType(user.id);
 
       if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
-
             setIndex(user.id, (getIndex(user.id) - 20));
             update = true;
           }
@@ -242,16 +240,23 @@ io.on('connection', socket => {
         if (getStatus(user.id) == 1)  {
           // Pacman collides with (eats) ghost
           incrementScore(user.id, 5);
+          var pointUnderGhost = false
           getLobbyUsers(user.lobby).forEach(user =>  {
             if (index == getIndex(user.id)) {
+              // Check to see if ghost was passing over dot or pill. if so, pacman gains points
+              if (getPrevPosType(user.id) == 2 || getPrevPosType(user.id) == 6) {
+                pointUnderGhost = true;
+              }
               respawn(gameBoard, user); // Ghost repawns
             }
           });
+          if (pointUnderGhost) incrementScore(user.id, 1);
         }
         else { // Pacman collided with ghost
           getLobbyUsers(user.lobby).forEach((user) => {
             if (index == getIndex(user.id)) {
               incrementScore(user.id, 10); // Ghost killed pacman and increases score
+              setPrevPosType(user.id, 0); // Replace pacman with empty space after ghost moves
             }
           });
           gameBoard[getPrevIndex(user.id)] = 0; // Pacman ran into ghost. Old index is set to blank
@@ -264,7 +269,8 @@ io.on('connection', socket => {
           if (getStatus(user.id) == 1)  { // Pacman ate a pill and can eat ghosts
             getLobbyUsers(user.lobby).forEach(user =>  {
               if (index == getIndex(user.id)) {
-                incrementScore(user.id, 5); // Pacman ate this ghost
+                incrementScore(user.id, 5); // Pacman ate this ghost and increases score
+                setPrevPosType(user.id, 0); // Replace ghsot with empty space after pacman moves
               }
             });
             respawn(gameBoard, user); // This ghost respawns
