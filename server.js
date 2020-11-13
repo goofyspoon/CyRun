@@ -135,6 +135,7 @@ io.on('connection', socket => {
       if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
+
             setIndex(user.id, (getIndex(user.id) - 20));
             update = true;
           }
@@ -231,6 +232,7 @@ io.on('connection', socket => {
         return true;
       }
       else { // Ghost moved over pill/dot
+        gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id);
         setPrevPosType(user.id, gameBoard[index]);
         return true;
       }
