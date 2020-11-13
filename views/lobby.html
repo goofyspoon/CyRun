@@ -13,6 +13,36 @@
   </a>
 </nav>
 
+<div id="endgameboard" class="rounded border border-dark bg-light border-5 p-2">
+  <nav class="navbar navbar-light bg-dark">
+    <a class="navbar-brand mx-auto">
+      <img height="48px" src="gameover.png">
+    </a>
+  </nav>
+  <div>
+  <br><br>
+  <h4 id="winner"></h4>
+  <br><br>
+  <h4><u>Scoreboard</u></h4><br>
+  <p2 id="finalScoreboard"></p2> 
+  <br><br>
+  <h4 id="matchTime"></h4>
+  <br><br>
+  <form action="index.html" class="form-group">
+    <button type="submit" id="submit" class="btn btn-primary">Return to main menu</button>
+  </form>
+  </div>
+</div>
+
+<!-- <script>
+  function off() {
+    document.getElementById("endgameboard").style.display = "none";
+  }
+</script> -->
+
+<!--This button is purely for development purposes. It will trigger the game in the same way as if all pac dots have been eaten-->
+<button onclick="callEnd()">End Game Sim</button>
+
 <div class="container-fluid">
   <div class="row">
     <!-- Left Column -->
@@ -22,7 +52,7 @@
         <div class="rounded border border-dark bg-light border-5 p-2" id="chat" style=" height: 80%; overflow-y: scroll; max-height: 500px;"></div>
         <div class="input-group mt-1">
           <input type="text" placeholder="Type your message" id="chatbox" name="chat" class="form-control">
-          <div classs="input-group-append">
+          <div class="input-group-append">
             <button type="button" id="send" class="btn btn-primary">Send</button>
           </div>
         </div>
@@ -32,7 +62,7 @@
 
     <!-- Middle Column -->
     <div class="col-lg-6 text-center" id="wrapper">
-      <!--<canvas id="canvas" width="550" height="650" style=" border:5px solid #FFFF00;"></canvas>-->
+      <h4 id="countdown"></h4>
       <div id="game"></div>
     </div>
     <!-- Right Column -->
@@ -47,6 +77,7 @@
 
   </div>
 </div>
+<p></p><br><br>
 <footer class="footer text-center bg-dark">
   <p style="color:#FFFF00"><span id="pregameMsg">Four players are needed for a game to begin<br /></span>
   Created by <a href="http://christianlisle.com" target="_blank">Christian Lisle</a>, Marissa Gustafson, and Joe Dobosenski</p>

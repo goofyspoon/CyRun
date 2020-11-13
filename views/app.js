@@ -6,12 +6,18 @@ const leaveLobbyBtn = document.getElementById('leave');
 const chat = document.getElementById('chat');
 const chatbox = document.getElementById('chatbox')
 const sendChat = document.getElementById('send');
-//const gameGrid = document.getElementById('canvas');
 const gameGrid = document.querySelector('#game');
+const winnerText = document.getElementById('winner');
+const finalScoreboard = document.getElementById('finalScoreboard');
+const matchTime = document.getElementById('matchTime');
+const gameOver = document.getElementById('endgameboard');
+gameOver.style.display = "none";
 
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
+
+var playerEnabled = -1;
 
 const SQUARE_TYPE = {
   BLANK: 'blank',
@@ -46,8 +52,17 @@ const {username, lobby} = Qs.parse(location.search, {ignoreQueryPrefix: true});
 // Join lobby
 socket.emit('joinLobby', {username, lobby});
 
+// DEVELOPMENT - should get deleted after the end game works
+function callEnd() {
+  console.log("here");
+  socket.emit('simEnd', {lobby : lobby});
+}
+
 // Get lobby and Users
 socket.on('lobbyUsers', ({lobby, users}) => {
+  let countdown = document.getElementById('countdown');
+  countdown.innerHTML = "Waiting for more players...";
+
   outputLobbyName(lobby);
   outputUsers(users);
 });
@@ -123,13 +138,39 @@ socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
 
 // gameOver from server
 socket.on('gameOver', ({lobby, users, gameTime}) => {
-  // TO BE IMPLEMENTED
-  // Determine winner and show overall scoreboard
-  // Possibly take users to another page with description of round (time, scoreboard, etc.)
+  socket.emit('ackGameEnd', {id : socket.id});
+  playerEnabled = -1;
+  let ghostTotal = 0;
+  for(let i = 0; i < 3; i++)
+    ghostTotal += users[i].score;
+  if(users[3].score > ghostTotal)
+  winnerText.innerHTML = "Pacman wins!!!";
+  else
+  winnerText.innerHTML = "The ghosts win!!!";
+
+  let spacer = document.createElement('br');
+  // endgamebox.appendChild(spacer);
+  // spacer = document.createElement('br');
+  // endgamebox.appendChild(spacer);
+
+  for(let i = 0; i < 4; i ++){
+    let p = document.createElement('p');
+    if(users[i].playerRole == 1)
+      p.innerHTML = "Red Ghost Score: " + users[i].score;
+    else if(users[i].playerRole == 2)
+      p.innerHTML = "Blue Ghost Score: " + users[i].score;
+    else if(users[i].playerRole == 3)
+      p.innerHTML = "Orange Ghost Score: " + users[i].score;
+    else if(users[i].playerRole == 4)
+      p.innerHTML = "Pacman Score: " + users[i].score;
+    // spacer.appendChild(p);
+    finalScoreboard.appendChild(p);
+  }
+  gameOver.style.display = "block";
   // Maybe take in a timer parameter as well?
-  var test = document.createElement('p'); // DELETE THIS
-  test.innerText = 'game time: ' + gameTime + ' seconds'; // DELETE THIS
-  chat.appendChild(test); // DELETE THIS
+  matchTime.innerText = 'Match time: ' + gameTime + ' seconds'; // DELETE THIS
+  // winnerText.appendChild(test); // DELETE THIS
+  // socket.disconnect();
 });
 
 // Send message
@@ -156,9 +197,28 @@ function outputLobbyName(lobby) {
 
 socket.on('setRoles', ({users}) => {
   //appendRoles(users);
+  startCountDown();
   updateScores(users);
   document.getElementById("pregameMsg").innerHTML = "Controls: Use the arrow keys to move your character.<br />";
 });
+
+function startCountDown(){
+  //Start 5 second countdown to start game
+  let countdown = document.getElementById('countdown');
+  let second = 5;
+  var interval = setInterval(function() {
+    if(second > 0)
+      countdown.innerHTML = "Match starting in: " + second;
+    else if(second == 0)
+      countdown.innerHTML = "GO!";
+    else 
+      clearInterval(interval);
+    second--;
+  }, 1000);
+  
+  //Enable player so that they can send direction update to server
+  playerEnabled = 1;
+}
 
 /*function appendRoles(users){
    var descendants = userList.getElementsByTagName('li');
@@ -190,8 +250,8 @@ function updateScores(users)  {
     if (user.playerRole == 4)
       var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
 
-    scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
-    fakeUsers[user.playerRole - 1] = {username: scoreName};
+    //scoreName = user.status + " " + scoreName; // Development purposes only. DELETE THIS
+    fakeUsers[user.playerRole - 1] = {username: scoreName, id : user.id};
   });
   outputUsers(fakeUsers);
 }
@@ -204,7 +264,7 @@ function outputUsers(users) {
     const li = document.createElement('li');
     li.innerText = user.username;
     li.setAttribute("id", user.username);
-    if (user.username.includes(username)) {
+    if (user.id === socket.id) {
       li.style.fontWeight = "bold";
     }
     userList.appendChild(li);
@@ -212,19 +272,21 @@ function outputUsers(users) {
 }
 
 this.document.addEventListener('keydown', function(event) {
-  // event.repeat is true if user is holding down key (this causes issues with server)
-  if (!event.repeat)  {
-    if (event.key == "ArrowLeft") {
-      socket.emit('changeDirection', ('left'));
-    }
-    else if (event.key == "ArrowUp") {
-      socket.emit('changeDirection', ('up'));
-    }
-    else if (event.key == "ArrowRight") {
-      socket.emit('changeDirection', ('right'));
-    }
-    else if (event.key == "ArrowDown") {
-      socket.emit('changeDirection', ('down'));
+  event.preventDefault();
+  if (!event.repeat)  { // event.repeat is true if user is holding down key (this causes issues with server)
+    if(playerEnabled != -1){ // check to make sure that the game has started
+      if (event.key == "ArrowLeft") {
+        socket.emit('changeDirection', ('left'));
+      }
+      else if (event.key == "ArrowUp") {
+        socket.emit('changeDirection', ('up'));
+      }
+      else if (event.key == "ArrowRight") {
+        socket.emit('changeDirection', ('right'));
+      }
+      else if (event.key == "ArrowDown") {
+        socket.emit('changeDirection', ('down'));
+      }
     }
   }
 }, true);

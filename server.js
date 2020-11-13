@@ -45,11 +45,11 @@ io.on('connection', socket => {
     // Check the lobby to ensure there will not be two users with the same name or there are already 4 users in the lobby
     var entranceFailure = false;
     let usersInLobby = getLobbyUsers(lobby);
-	if (usersInLobby.length >= 4)	{
-    console.log("Rejected player because lobby is full.");
-		socket.emit('message', 'The lobby, ' + lobby + ', is full')
-		entranceFailure = true;
-	}
+    if (usersInLobby.length >= 4)	{
+      console.log("Rejected player because lobby is full.");
+      socket.emit('message', 'The lobby, ' + lobby + ', is full')
+      entranceFailure = true;
+    }
     for (var i = 0; i < usersInLobby.length && !(entranceFailure); i++) {
       if (usersInLobby[i].username === username) {
         socket.emit('message', 'There already exists a user in lobby: \"' + lobby + '\" with the name: \"' + username + '\"');
@@ -104,35 +104,46 @@ io.on('connection', socket => {
       setPlayerNum(users[i].id, i + 1);
       setDirection(users[i].id, 0);
 
-    if (i < 3) { // Players 0, 1, & 2 are ghosts
-        respawn(gameBoard, users[i]);
-        setPrevIndex(users[i].id, getIndex(users[i].id));
-        gameBoard[getIndex(users[i].id)] = i + 3;
-        setPrevPosType(users[i].id, 8);
-      } else  { // Last player will be pacman
+      if (i < 3) { // Players 0, 1, & 2 are ghosts
+          respawn(gameBoard, users[i]);
+          setPrevIndex(users[i].id, getIndex(users[i].id));
+          gameBoard[getIndex(users[i].id)] = i + 3;
+          setPrevPosType(users[i].id, 8);
+        } 
+      else  { // Last player will be pacman
         var pacmanStart = Math.floor(Math.random() * (292 - 288)) + 288;
         setIndex(users[i].id, pacmanStart);
         setPrevIndex(users[i].id, pacmanStart);
         gameBoard[getIndex(users[i].id)] = 7;
         setPrevPosType(users[i].id, 0);
       }
+    }
+
+    // Begin game
+    io.to(user.lobby).emit('setRoles', {users : users});
+    io.to(user.lobby).emit('drawGameBoard', ({gameBoard}));
+
+    gameTimer = new Date();
+    game(users, gameBoard);
   }
 
-  // Begin game
-  io.to(user.lobby).emit('setRoles', {users : users});
-  io.to(user.lobby).emit('drawGameBoard', ({users: users, gameBoard: gameBoard}));
-
-  gameTimer = new Date();
-  game(users, gameBoard);
-  console.log('Beginning game');
-  }
+  
+  socket.on('ackGameEnd', (id) => {
+    userLeave(id);
+    socket.disconnect();
+  });
 
   // Constant updates between clients and server (real-time game)
   function game(users, gameBoard) {
     users.forEach(user => {
       var update = false;
-
-      if (getDirection(user.id) == -20)  { // Player is moving up
+      // console.log(user);
+      if(getDirection(user.id) == -2)
+        return;
+      else if (getDirection(user.id) == 0) {
+        // Player is not moving
+      }
+      else if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
             setIndex(user.id, (getIndex(user.id) - 20));
@@ -204,6 +215,22 @@ io.on('connection', socket => {
       clearInterval(gameUpdateTimer);
       gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
     }
+    // console.log('Interval set (220 ms)'); // Development purposes only. DELETE THIS
+    clearInterval(gameUpdateTimer);
+    gameUpdateTimer = setInterval(function() {game(users, gameBoard);}, 220); //Loop function
+  }
+  // Unused methods
+  /*
+  function addObject(position, object){
+    gameBoard[position].classList.add(...classes);
+  }
+
+  function removeObject(position, object){
+    gameBoard[position].classList.remove(...classes);
+  }
+
+  function objectExist(position, object){
+    return gameBoard[position].classList.contains(object);
   }
 
   // Handle player movement over a pill or dot. Returns false if two ghosts run into each other
@@ -356,7 +383,18 @@ io.on('connection', socket => {
     return true;
   }
 
-  // Handle player direction changes (keypresses). Collision handling is done within the game() function
+  //DEVELOPMENT feature and should be taken out for demo/final product
+  socket.on('simEnd', (lobby) => {
+    let users = getLobbyUsers(lobby.lobby);
+    console.log(gameTimer);
+    io.to(users[0].lobby).emit('gameOver', {
+      lobby: users[0].lobby,
+      users: getLobbyUsers(users[0].lobby),
+      gameTime: gameTimer
+    });
+  });
+
+  // Handle player direction changes (keypresses)
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
     // Set the user (server-side) direction to direction from parameter.
