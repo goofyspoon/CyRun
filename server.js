@@ -131,6 +131,7 @@ io.on('connection', socket => {
   function game(users, gameBoard) {
     users.forEach(user => {
       var update = false;
+      var prevPosType = getPrevPosType(user.id);
 
       if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
@@ -181,7 +182,7 @@ io.on('connection', socket => {
       }
 
       if (update) {
-        gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id);
+        gameBoard[getPrevIndex(user.id)] = prevPosType;
         setPrevPosType(user.id, gameBoard[getIndex(user.id)]);
         setPrevIndex(user.id, getIndex(user.id));
         gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
@@ -232,7 +233,6 @@ io.on('connection', socket => {
         return true;
       }
       else { // Ghost moved over pill/dot
-        gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id);
         setPrevPosType(user.id, gameBoard[index]);
         return true;
       }
