@@ -82,7 +82,7 @@ function getQueue(id) {
 }
 
 // Set the direction of a user (0 none, -20 up, 1 right, 20 down, -1 left)
-function queue(id, direction)  {
+function setQueue(id, direction)  {
   let index = users.findIndex(user => user.id === id);
   users[index].queue = direction;
 }

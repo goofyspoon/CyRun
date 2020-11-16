@@ -142,52 +142,81 @@ io.on('connection', socket => {
     users.forEach(user => {
       var update = false;
 
-      if (getDirection(user.id) == -20)  { // Player is moving up
-        if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
+      if (getQueue(user.id) != 0 && getQueue(user.id) != getDirection(user.id)) { // Check queue direction and act accordingly
+        if (getQueue(user.id) == -20)  { // Player is moving up
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
-            setIndex(user.id, (getIndex(user.id) - 20));
             update = true;
           }
         }
-      }
-      else if (getDirection(user.id) == 1)  { // Player is moving to the Right
-        if (getIndex(user.id) == 239) { // Player is passing through portal on right side
-          if (checkCollisions(gameBoard, 220, user)) {
-            setIndex(user.id, 220);
-            setDirection(user.id, 1);
-            update = true;
-          }
-        }
-        else if (checkCollisions(gameBoard, (getIndex(user.id) + 1), user))  {
+        else if (getQueue(user.id) == 1)  { // Player is moving to the Right
           if (gameBoard[getIndex(user.id) + 1] != 1)  { // Player is not colliding with wall
-            setIndex(user.id, (getIndex(user.id) + 1));
             update = true;
           }
         }
-      }
-      else if (getDirection(user.id) == 20)  { // Player is moving down
-        if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
+        else if (getQueue(user.id) == 20)  { // Player is moving down
           if (gameBoard[getIndex(user.id) + 20 ] != 1)  { // Player is not colliding with wall
-            setIndex(user.id, (getIndex(user.id) + 20));
             update = true;
           }
         }
-      }
-      else if (getDirection(user.id) == -1)  { // Player is moving to the left
-        if (getIndex(user.id) == 220) { // Player is passing through portal on right side
-          if (checkCollisions(gameBoard, 239, user)) {
-            setIndex(user.id, 239);
-            setDirection(user.id, -1);
-            update = true;
-          }
-        }
-        else if (checkCollisions(gameBoard, (getIndex(user.id) - 1), user))  {
+        else if (getQueue(user.id) == -1)  { // Player is moving to the left
           if (gameBoard[getIndex(user.id) - 1] != 1)  { // Player is not colliding with wall
-            setIndex(user.id, (getIndex(user.id) - 1));
-            update = true;
+              update = true;
+            }
           }
+
+        if (update) {// Update user direction and clear queue
+          setDirection(user.id, getQueue(user.id));
+          setQueue(user.id, 0);
+          update = false;
         }
       }
+        if (getDirection(user.id) == -20)  { // Player is moving up
+          if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
+            if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
+              setIndex(user.id, (getIndex(user.id) - 20));
+              update = true;
+            }
+          }
+        }
+        else if (getDirection(user.id) == 1)  { // Player is moving to the Right
+          if (getIndex(user.id) == 239) { // Player is passing through portal on right side
+            if (checkCollisions(gameBoard, 220, user)) {
+              setIndex(user.id, 220);
+              setDirection(user.id, 1);
+              update = true;
+            }
+          }
+          else if (checkCollisions(gameBoard, (getIndex(user.id) + 1), user))  {
+            if (gameBoard[getIndex(user.id) + 1] != 1)  { // Player is not colliding with wall
+              setIndex(user.id, (getIndex(user.id) + 1));
+              update = true;
+            }
+          }
+        }
+        else if (getDirection(user.id) == 20)  { // Player is moving down
+          if (checkCollisions(gameBoard, (getIndex(user.id) + 20), user)) {
+            if (gameBoard[getIndex(user.id) + 20 ] != 1)  { // Player is not colliding with wall
+              setIndex(user.id, (getIndex(user.id) + 20));
+              update = true;
+            }
+          }
+        }
+        else if (getDirection(user.id) == -1)  { // Player is moving to the left
+          if (getIndex(user.id) == 220) { // Player is passing through portal on right side
+            if (checkCollisions(gameBoard, 239, user)) {
+              setIndex(user.id, 239);
+              setDirection(user.id, -1);
+              update = true;
+            }
+          }
+          else if (checkCollisions(gameBoard, (getIndex(user.id) - 1), user))  {
+            if (gameBoard[getIndex(user.id) - 1] != 1)  { // Player is not colliding with wall
+              setIndex(user.id, (getIndex(user.id) - 1));
+              update = true;
+            }
+          }
+        }
+
 
       if (update) {
         gameBoard[getPrevIndex(user.id)] = getPrevPosType(user.id);
@@ -335,7 +364,9 @@ io.on('connection', socket => {
     setIndex(user.id, spawn);
     setPrevIndex(user.id, getIndex(user.id));
     gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
-    setDirection(user.id, 0); // Player is not moving when they first respawn
+    // Player is not moving when they first respawn
+    setDirection(user.id, 0);
+    setQueue(user.id, 0);
   }
 
   // Handle Pacman eating a pill and becoming super
@@ -383,11 +414,17 @@ io.on('connection', socket => {
     const user = getCurrentUser(socket.id);
     // Set the user (server-side) direction to direction from parameter.
     // Only sets the users direction if the user is not trying to move into a wall
-    
+    /*
     if (direction === 'up' && gameBoard[getIndex(user.id) - 20] != 1) setDirection(user.id, -20);
     else if (direction === 'right' && gameBoard[getIndex(user.id) + 1] != 1) setDirection(user.id, 1);
     else if (direction === 'down' && gameBoard[getIndex(user.id) + 20] != 1) setDirection(user.id, 20);
     else if (direction === 'left' && gameBoard[getIndex(user.id) - 1] != 1) setDirection(user.id, -1);
+    */
+
+    if (direction === 'up') setQueue(user.id, -20);
+    else if (direction === 'right') setQueue(user.id, 1);
+    else if (direction === 'down') setQueue(user.id, 20);
+    else if (direction === 'left') setQueue(user.id, -1);
   });
 
   // Lobby chat
