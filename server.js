@@ -13,6 +13,8 @@ const {
   setIndex,
   getDirection,
   setDirection,
+  getQueue,
+  setQueue,
   getPrevIndex,
   setPrevIndex,
   getPrevPosType,
@@ -381,6 +383,7 @@ io.on('connection', socket => {
     const user = getCurrentUser(socket.id);
     // Set the user (server-side) direction to direction from parameter.
     // Only sets the users direction if the user is not trying to move into a wall
+    
     if (direction === 'up' && gameBoard[getIndex(user.id) - 20] != 1) setDirection(user.id, -20);
     else if (direction === 'right' && gameBoard[getIndex(user.id) + 1] != 1) setDirection(user.id, 1);
     else if (direction === 'down' && gameBoard[getIndex(user.id) + 20] != 1) setDirection(user.id, 20);
