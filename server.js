@@ -33,8 +33,6 @@ const app = express();
 const server = http.createServer(app);
 const io = socket(server);
 const PORT = 3000 || process.anv.PORT;
-// const CANVAS_HEIGHT = 650; // Not used anymore
-// const CANVAS_WIDTH = 550; // Not used anymore
 
 app.use(express.static('views')); // Set static folder to /views
 
@@ -106,7 +104,6 @@ io.on('connection', socket => {
   function beginGame(user, users)  {
     for (let i = 0; i < 4; i++) {
       setPlayerNum(users[i].id, i + 1);
-      setDirection(users[i].id, 0);
 
       if (i < 3) { // Players 0, 1, & 2 are ghosts
           respawn(gameBoard, users[i]);
@@ -127,14 +124,11 @@ io.on('connection', socket => {
     io.to(user.lobby).emit('setRoles', {users : users});
     io.to(user.lobby).emit('loadBoard', ({users : users, gameBoard}));
 
-    // wait 5 seconds to begin game
-    setInterval(function()  {
-      gameTimer = new Date();
-      game(users, gameBoard);
-    }, 5000);
+    gameTimer = new Date();
+    game(users, gameBoard);
   }
 
-
+  // User acknowledged the game ended and left the lobby
   socket.on('ackGameEnd', (id) => {
     userLeave(id);
     socket.disconnect();
@@ -142,15 +136,11 @@ io.on('connection', socket => {
 
   // Constant updates between clients and server (real-time game)
   function game(users, gameBoard) {
+    // Iterate through players and determine their new position based on their direction
     users.forEach(user => {
       var update = false;
-      // console.log(user);
-      if(getDirection(user.id) == -2)
-        return;
-      else if (getDirection(user.id) == 0) {
-        // Player is not moving
-      }
-      else if (getDirection(user.id) == -20)  { // Player is moving up
+
+      if (getDirection(user.id) == -20)  { // Player is moving up
         if (checkCollisions(gameBoard, (getIndex(user.id) - 20), user)) {
           if (gameBoard[getIndex(user.id) - 20 ] != 1)  { // Player is not colliding with wall
             setIndex(user.id, (getIndex(user.id) - 20));
@@ -227,12 +217,11 @@ io.on('connection', socket => {
   function checkCollisions(gameBoard, index, user) {
     // First check if player is colliding with nothing
     if (gameBoard[index] == 0 || (gameBoard[index] == 8 && user.playerRole != 4)) {
-      setPrevPosType(user.id, gameBoard[index]);
+      //setPrevPosType(user.id, gameBoard[index]);
       return true;
     } // Player collides with dot or pill
     else if (gameBoard[index] == 6 || gameBoard[index] == 2) {
       if (getCurrentUser(user.id).playerRole == 4)  { // Check if user is pacman
-        incrementScore(user.id, 1);
         if (gameBoard[index] == 6) { // pacman consumed pill
           statusTimer = setTimeout(() => statusChange(user), 10000);
           if (user.status == 0) {
@@ -244,11 +233,12 @@ io.on('connection', socket => {
             statusChange(statusTimer);
           }
         }
-        setPrevPosType(user.id, 0); // dot or pill will be replaced with empty space after pacman moves again
+        incrementScore(user.id, 1);
+        gameBoard[index] = 0; // dot or pill will be replaced with empty space after pacman moves again (prevPosType set after this function in game())
         return true;
       }
       else { // Ghost moved over pill/dot
-        setPrevPosType(user.id, gameBoard[index]);
+        //setPrevPosType(user.id, gameBoard[index]);
         return true;
       }
     } // Player collides with another player
@@ -256,8 +246,8 @@ io.on('connection', socket => {
       if (getCurrentUser(user.id).playerRole == 4)  {
         if (getStatus(user.id) == 1)  {
           // Pacman collides with (eats) ghost
-          incrementScore(user.id, 5);
-          var pointUnderGhost = false
+          incrementScore(user.id, 2);
+          var pointUnderGhost = false;
           getLobbyUsers(user.lobby).forEach(user =>  {
             if (index == getIndex(user.id)) {
               // Check to see if ghost was passing over dot or pill. if so, pacman gains points
@@ -272,11 +262,11 @@ io.on('connection', socket => {
         else { // Pacman collided with ghost
           getLobbyUsers(user.lobby).forEach((user) => {
             if (index == getIndex(user.id)) {
-              incrementScore(user.id, 10); // Ghost killed pacman and increases score
-              setPrevPosType(user.id, 0); // Replace pacman with empty space after ghost moves
+              incrementScore(user.id, 15); // Ghost killed pacman and increases score
+              //setPrevPosType(user.id, 0); // Replace pacman with empty space after ghost moves
             }
           });
-          gameBoard[getPrevIndex(user.id)] = 0; // Pacman ran into ghost. Old index is set to blank
+          gameBoard[getIndex(user.id)] = 0; // Pacman ran into ghost. Their character disappears
           respawn(gameBoard, user); // Pacman respawns
         }
         return true; // Pacman collided with another player. One of them respawns.
@@ -286,15 +276,15 @@ io.on('connection', socket => {
           if (getStatus(user.id) == 1)  { // Pacman ate a pill and can eat ghosts
             getLobbyUsers(user.lobby).forEach(user =>  {
               if (index == getIndex(user.id)) {
-                incrementScore(user.id, 5); // Pacman ate this ghost and increases score
-                setPrevPosType(user.id, 0); // Replace ghsot with empty space after pacman moves
+                incrementScore(user.id, 2); // Pacman ate this ghost and increases score
+                setPrevPosType(user.id, 0); // Replace ghost with empty space after pacman moves
               }
             });
             respawn(gameBoard, user); // This ghost respawns
           }
           else { // Pacman can't eat ghosts and is killed
-            incrementScore(user.id, 10); // Ghost killed pacman
-            setPrevPosType(user.id, 0); // Ensures that ghost does not drop a dot or pill after moving again
+            incrementScore(user.id, 15); // Ghost killed pacman
+            //setPrevPosType(user.id, 0); // Ensures that ghost does not drop a dot or pill after moving again
             getLobbyUsers(user.lobby).forEach(user => {
               if (index == getIndex(user.id)) {
                 respawn(gameBoard, user); // Pacman respawns
@@ -321,27 +311,26 @@ io.on('connection', socket => {
   // Handle player respawn
   function respawn(gameBoard, user)  {
     var foundSpawn = false;
+    var spawn = Math.floor(Math.random() * gameBoard.length);
     if (user.playerRole == 4) {
       // choose a random spawn point for Pacman in map
       // ensures that player is not spawning in a wall or play
-      var spawn = Math.floor(Math.random() * gameBoard.length);
       while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * gameBoard.length);
         foundSpawn = (gameBoard[spawn] == 0 && spawn != getIndex(user.id)); // Break out of while loop if empty cell (or dot cell) found and not in the same cell
       }
-      setIndex(user.id, spawn);
       setPrevPosType(user.id, 0);
     }
     else {
       // Spawn within middle ghost area (indices: min: 188, max: 251)
-      var spawn = Math.floor(Math.random() * gameBoard.length);
       while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * gameBoard.length);
         foundSpawn = (gameBoard[spawn] == 8); // Break out of while loop if empty lair cell found
       }
-      setIndex(user.id, spawn);
       setPrevPosType(user.id, 8);
     }
+    gameBoard[getIndex(user.id)] = 0; // Replace old position with blank spot
+    setIndex(user.id, spawn);
     setPrevIndex(user.id, getIndex(user.id));
     gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
     setDirection(user.id, 0); // Player is not moving when they first respawn
@@ -367,7 +356,7 @@ io.on('connection', socket => {
       }
     }
     // Game is over, record how long game was and return true
-    gameTimer = (new Date()) - gameTimer;
+    gameTimer = (new Date()) - gameTimer - 5000; // Subtract 5 second delay at beginning of game
     gameTimer /= 1000; //Strip the ms
     gameTimer = Math.round(gameTimer);
     return true;
