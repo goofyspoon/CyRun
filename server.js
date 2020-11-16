@@ -33,8 +33,8 @@ const app = express();
 const server = http.createServer(app);
 const io = socket(server);
 const PORT = 3000 || process.anv.PORT;
-const CANVAS_HEIGHT = 650;
-const CANVAS_WIDTH = 550;
+// const CANVAS_HEIGHT = 650; // Not used anymore
+// const CANVAS_WIDTH = 550; // Not used anymore
 
 app.use(express.static('views')); // Set static folder to /views
 
@@ -97,6 +97,11 @@ io.on('connection', socket => {
     }
   }
 
+  // Filter gameBoard and remove all stationary (wall) elements. Reduces lag since we are not sending stationary data in every packet
+  function removeWalls(gameBoard) {
+    return gameBoard != 1;
+  }
+
   // Set the roles and starting positions of each player and begin the game
   function beginGame(user, users)  {
     for (let i = 0; i < 4; i++) {
@@ -120,7 +125,7 @@ io.on('connection', socket => {
 
     // Begin game
     io.to(user.lobby).emit('setRoles', {users : users});
-    io.to(user.lobby).emit('drawGameBoard', ({users : users, gameBoard}));
+    io.to(user.lobby).emit('loadBoard', ({users : users, gameBoard}));
 
     // wait 5 seconds to begin game
     setInterval(function()  {
@@ -198,9 +203,8 @@ io.on('connection', socket => {
         setPrevIndex(user.id, getIndex(user.id));
         gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
         io.to(user.lobby).emit('gameUpdate', {
-          lobby: user.lobby,
           users: getLobbyUsers(user.lobby),
-          gameBoard: gameBoard
+          gameBoard: gameBoard.filter(removeWalls) // Sends array without walls (sending stationary data is pointless and causes lag)
         });
       }
     }); // End forEach
@@ -392,7 +396,7 @@ io.on('connection', socket => {
     else if (direction === 'right' && gameBoard[getIndex(user.id) + 1] != 1) setDirection(user.id, 1);
     else if (direction === 'down' && gameBoard[getIndex(user.id) + 20] != 1) setDirection(user.id, 20);
     else if (direction === 'left' && gameBoard[getIndex(user.id) - 1] != 1) setDirection(user.id, -1);
-  }); // End handle player movement
+  });
 
   // Lobby chat
   // lobby chat -- normal message
