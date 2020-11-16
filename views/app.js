@@ -17,6 +17,7 @@ gameOver.style.display = "none";
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
 
+var localBoard;
 var playerEnabled = -1;
 
 const SQUARE_TYPE = {
@@ -66,14 +67,27 @@ socket.on('lobbyUsers', ({lobby, users}) => {
   outputUsers(users);
 });
 
-// Load board
-socket.on('loadBoard', () => {
-  drawBoard();
+// Initial drawing of gameBoard (Beginning of game)
+socket.on('loadBoard',({users, gameBoard}) => {
+  drawGameBoard(users, gameBoard);
+  localBoard = gameBoard; // Save gameBoard to client side (walls are important here). This is going to be used to help reduce lag between
+                         // server and client because going forward we will only have the server send array updates
+                         // on non-stationary elements (everything except walls). This should reduce lag drastically - Christian
 });
 
-//io.to(user.lobby).emit('drawGameBoard', (gameBoard));
-socket.on('drawGameBoard',({users, gameBoard}) =>{
-  drawGameBoard(users, gameBoard);
+// gameUpdates from server (i.e. player position change). This is constant
+socket.on('gameUpdate', ({users, gameBoard}) => {
+  // TODO: update localBoard (set all values to gameBoard except those that are walls) and pass that to drawGameBoard method
+
+  var j = 0; // index counter for gameBoard
+  for (var i = 0; i < localBoard.length && j < gameBoard.length; i++) {
+    if (localBoard[i] != 1) { // if element in localBoard is not a wall update it
+      localBoard[i] = gameBoard[j++];
+    }
+  }
+  //drawGameBoard(users, gameBoard);
+  drawGameBoard(users, localBoard);
+  updateScores(users);
 });
 
 function drawGameBoard(users, gameBoard){
@@ -124,12 +138,6 @@ socket.on('message', message => {
   p.innerText = message;
   chat.appendChild(p);
   chat.scrollTop = chat.scrollHeight; // automatically scroll to bottom of chat messages
-});
-
-// gameUpdates from server (i.e. player position change)
-socket.on('gameUpdate', ({lobby, users, gameBoard}) => {
-  drawGameBoard(users, gameBoard);
-  updateScores(users);
 });
 
 // gameOver from server
@@ -243,7 +251,6 @@ function outputUsers(users) {
 }
 
 this.document.addEventListener('keydown', function(event) {
-  event.preventDefault();
   if (!event.repeat)  { // event.repeat is true if user is holding down key (this causes issues with server)
     if(playerEnabled != -1){ // check to make sure that the game has started
       if (event.key == "ArrowLeft") {
