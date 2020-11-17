@@ -1,9 +1,14 @@
 # G33
-## CyRun
-CyRun is a multiplayer web-based game similar to Pac-Man. Users will run awayfrom an enemy while picking up resources. If the user picks up all the resources beforebeing caught by the enemy, the user wins. If the enemy catches the user before the userpicks up all the resources, the enemy wins. The layout of the game is also scalable toallow for easier or harder challenges. Users will be able to play the game with at least oneother player. This game will need to update in real time in order to connect the two users.We will be able to scale the quality of the UI to provide enough work for the entiresemester.
+## [CyRun](http://coms-319-t33.cs.iastate.edu:8080)
+CyRun is a multiplayer web-based game extremely similar to Pac-Man. There is currently one game mode that allows for exactly four users to join a lobby. After all four users join, the game begins. The game assigns three of the players as ghosts and one Pacman. The game mechanics are fairly similar to that of Pacman, where ghosts try to collide with Pacman to kill him. The three ghost players all have the same objective in mind, to kill Pacman as many times as possible while he tries to collect all dots and pills. The game finishes as soon as Pacman has consumed all of the dots and pills. Similar to regular Pacman, after Pacman consumes a pill, he is given ten seconds where he is immune to the ghosts, and actually eats them in the event of a collision. The winner of a game is determined at the end. Either Pacman or the three ghosts (together) can win. The Scoring system is listed below.
 
-## Group Members:
-* Christian Lisle
+### Scoring System:
+* Pacman consumes a dot or pill - 1 point
+* Pacman consumes a ghost       - 2 points
+* Ghost kills Pacman            - 15 points
+
+## Developers:
+* [Christian Lisle](http://christianlisle.com)
 * Joseph Dobosenski
 * Marissa Gustafson
 
