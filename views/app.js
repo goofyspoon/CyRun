@@ -268,3 +268,12 @@ this.document.addEventListener('keydown', function(event) {
     }
   }
 }, true);
+
+window.addEventListener('load', function(){
+    var game = document.getElementById('game');
+    swipedetect(game, function(swipedir){
+        if (swipedir != 'none' && playerEnabled != -1) {
+            socket.emit('changeDirection', (swipedir));
+        }
+    })
+}, false)
