@@ -412,14 +412,6 @@ io.on('connection', socket => {
   // Handle player direction changes (keypresses)
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);
-    // Set the user (server-side) direction to direction from parameter.
-    // Only sets the users direction if the user is not trying to move into a wall
-    /*
-    if (direction === 'up' && gameBoard[getIndex(user.id) - 20] != 1) setDirection(user.id, -20);
-    else if (direction === 'right' && gameBoard[getIndex(user.id) + 1] != 1) setDirection(user.id, 1);
-    else if (direction === 'down' && gameBoard[getIndex(user.id) + 20] != 1) setDirection(user.id, 20);
-    else if (direction === 'left' && gameBoard[getIndex(user.id) - 1] != 1) setDirection(user.id, -1);
-    */
 
     if (direction === 'up') setQueue(user.id, -20);
     else if (direction === 'right') setQueue(user.id, 1);
