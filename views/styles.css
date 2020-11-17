@@ -98,7 +98,7 @@ ul {
   display: block;
 }
 
-.blank {
+.blank, .outside {
   background: black;
 }
 

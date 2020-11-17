@@ -30,7 +30,8 @@ const SQUARE_TYPE = {
   PACMAN: 'pacman',
   GHOST: 'ghost',
   SCARED: 'scared',
-  GHOSTLAIR: 'lair'
+  GHOSTLAIR: 'lair',
+  OUTOFBOUNDS: 'outside'
 };
 
 // Lookup array for classes
@@ -43,7 +44,8 @@ const SQUARE_LIST = [
   SQUARE_TYPE.GHOST3,
   SQUARE_TYPE.PILL,
   SQUARE_TYPE.PACMAN,
-  SQUARE_TYPE.GHOSTLAIR
+  SQUARE_TYPE.GHOSTLAIR,
+  SQUARE_TYPE.OUTOFBOUNDS
 ];
 
 // Get username and lobby from URL
@@ -68,23 +70,19 @@ socket.on('lobbyUsers', ({lobby, users}) => {
 
 // Initial drawing of gameBoard (Beginning of game)
 socket.on('loadBoard',({users, gameBoard}) => {
-  drawGameBoard(users, gameBoard);
-  localBoard = gameBoard; // Save gameBoard to client side (walls are important here). This is going to be used to help reduce lag between
-                         // server and client because going forward we will only have the server send array updates
-                         // on non-stationary elements (everything except walls). This should reduce lag drastically - Christian
+  localBoard = gameBoard.slice(); // Save gameBoard to client side (walls are important here). This is going to be used to help reduce lag between
+                                  // server and client because going forward we will only have the server send array updates
+                                  // on non-stationary elements (everything except walls). This should reduce lag drastically - Christian
+  drawGameBoard(users, localBoard);
 });
 
 // gameUpdates from server (i.e. player position change). This is constant
 socket.on('gameUpdate', ({users, gameBoard}) => {
-  // TODO: update localBoard (set all values to gameBoard except those that are walls) and pass that to drawGameBoard method
-
-  var j = 0; // index counter for gameBoard
-  for (var i = 0; i < localBoard.length && j < gameBoard.length; i++) {
+  for (var i = j = 0; i < localBoard.length && j < gameBoard.length; i++) {
     if (localBoard[i] != 1) { // if element in localBoard is not a wall update it
       localBoard[i] = gameBoard[j++];
     }
   }
-  //drawGameBoard(users, gameBoard);
   drawGameBoard(users, localBoard);
   updateScores(users);
 });
@@ -120,11 +118,12 @@ function drawGameBoard(users, gameBoard){
           }
         });
       }
-      // div.innerText = square; // Development purposes only. DELETE THIS
+      div.innerText = square; // Development purposes only. DELETE THIS
       div.setAttribute("class", SQUARE_LIST[square]);
       board.appendChild(div);
       grid.push(div);
     });
+    console.log(gameBoard);
 }
 
 function rotateDiv(position, degree){

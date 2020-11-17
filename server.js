@@ -64,7 +64,7 @@ io.on('connection', socket => {
 
       // Welcome current user to lobby
       socket.emit('message', 'Welcome to CyRun lobby ' + user.lobby);
-      console.log("User "+ user.username+ " joined."); // Development purposes only. DELETE THIS
+      console.log('Lobby: ' + user.lobby + ' | ' + user.username + ' has joined'); // Development purposes only. DELETE THIS
 
       // Broadcast when a user connects
       socket.broadcast.to(user.lobby).emit('message', user.username + ' joined the lobby');
@@ -76,6 +76,7 @@ io.on('connection', socket => {
       });
 
       if(getLobbyUsers(user.lobby).length == 4) {
+        console.log('Lobby: ' + user.lobby + ' | A game has started');
         createGameBoard();
         let users = getLobbyUsers(user.lobby);
         beginGame(user, users);
@@ -86,15 +87,15 @@ io.on('connection', socket => {
   // Choose a random level (1 or 2) and store a copy of that level as gameBoard
   function createGameBoard()  {
     let choice = Math.floor(Math.random() * (3 - 1)) + 1; // max 2 (exclusive) min 1 (inclusive)
-    socket.emit('message', 'Map ' + choice + ' selected');
     switch (choice) {
       case 1:
         gameBoard = Constants.LEVEL1.slice(); // copy LEVEL1 in Constants.js
         break;
       case 2:
-        gameBoard = Constants.LEVEL2.slice();
+        gameBoard = Constants.LEVEL2.slice(); // copy LEVEL2 in Constants.js
         break;
     }
+    socket.emit('message', 'Map ' + choice + ' selected');
   }
 
   // Filter gameBoard and remove all stationary (wall) elements. Reduces lag since we are not sending stationary data in every packet
@@ -108,7 +109,7 @@ io.on('connection', socket => {
       setPlayerNum(users[i].id, i + 1);
 
       if (i < 3) { // Players 0, 1, & 2 are ghosts
-          respawn(gameBoard, users[i]);
+          respawn(gameBoard, users[i], false);
           setPrevIndex(users[i].id, getIndex(users[i].id));
           gameBoard[getIndex(users[i].id)] = i + 3;
           setPrevPosType(users[i].id, 8);
@@ -123,8 +124,8 @@ io.on('connection', socket => {
     }
 
     // Begin game
-    io.to(user.lobby).emit('setRoles', {users : users});
-    io.to(user.lobby).emit('loadBoard', ({users : users, gameBoard}));
+    io.to(user.lobby).emit('setRoles', {users: users});
+    io.to(user.lobby).emit('loadBoard', ({users: users, gameBoard: gameBoard}));
 
     gameTimer = new Date();
     game(users, gameBoard);
@@ -339,8 +340,8 @@ io.on('connection', socket => {
     }
   }
 
-  // Handle player respawn
-  function respawn(gameBoard, user)  {
+  // Handle player respawn (default value for gameStart is true since it is only false for one call)
+  function respawn(gameBoard, user, gameStart = true)  {
     var foundSpawn = false;
     var spawn = Math.floor(Math.random() * gameBoard.length);
     if (user.playerRole == 4) {
@@ -353,14 +354,14 @@ io.on('connection', socket => {
       setPrevPosType(user.id, 0);
     }
     else {
-      // Spawn within middle ghost area (indices: min: 188, max: 251)
+      // Spawn within ghost lair
       while (!foundSpawn)  {
         spawn = Math.floor(Math.random() * gameBoard.length);
         foundSpawn = (gameBoard[spawn] == 8); // Break out of while loop if empty lair cell found
       }
       setPrevPosType(user.id, 8);
     }
-    gameBoard[getIndex(user.id)] = 0; // Replace old position with blank spot
+    if (gameStart) gameBoard[getIndex(user.id)] = 0; // Replace old position with blank spot (only if game has started)
     setIndex(user.id, spawn);
     setPrevIndex(user.id, getIndex(user.id));
     gameBoard[getIndex(user.id)] = (user.playerRole == 4)? 7: user.playerRole + 2;
