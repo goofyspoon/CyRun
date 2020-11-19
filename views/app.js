@@ -118,7 +118,7 @@ function drawGameBoard(users, gameBoard){
           }
         });
       }
-      div.innerText = square; // Development purposes only. DELETE THIS
+      //div.innerText = square; // Development purposes only. DELETE THIS
       div.setAttribute("class", SQUARE_LIST[square]);
       board.appendChild(div);
       grid.push(div);
