@@ -11,6 +11,7 @@ const winnerText = document.getElementById('winner');
 const finalScoreboard = document.getElementById('finalScoreboard');
 const matchTime = document.getElementById('matchTime');
 const gameOver = document.getElementById('endgameboard');
+const playAgain = document.getElementById('playagain');
 gameOver.style.display = "none";
 
 var localBoard;
@@ -58,6 +59,11 @@ socket.emit('joinLobby', {username, lobby});
 function callEnd() {
   socket.emit('simEnd', {lobby : lobby});
 }
+
+//Reloads the page once play again button is closed which preserves the lobby and username
+playAgain.onclick = function() {
+  location.reload();
+};
 
 // Get lobby and Users
 socket.on('lobbyUsers', ({lobby, users}) => {
@@ -149,8 +155,6 @@ socket.on('gameOver', ({lobby, users, gameTime}) => {
   winnerText.innerHTML = "Pacman wins!!!";
   else
   winnerText.innerHTML = "The ghosts win!!!";
-
-  let spacer = document.createElement('br');
 
   for(let i = 0; i < 4; i ++){
     let p = document.createElement('p');
