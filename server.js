@@ -396,20 +396,6 @@ io.on('connection', socket => {
     return true;
   }
 
-  //DEVELOPMENT feature and should be taken out for demo/final product
-  socket.on('simEnd', (lobby) => {
-    let users = getLobbyUsers(lobby.lobby);
-    gameTimer = (new Date()) - gameTimer;
-    gameTimer /= 1000; //Strip the ms
-    gameTimer = Math.round(gameTimer);
-    console.log(gameTimer);
-    io.to(users[0].lobby).emit('gameOver', {
-      lobby: users[0].lobby,
-      users: getLobbyUsers(users[0].lobby),
-      gameTime: gameTimer
-    });
-  });
-
   // Handle player direction changes (keypresses)
   socket.on('changeDirection', (direction) => {
     const user = getCurrentUser(socket.id);

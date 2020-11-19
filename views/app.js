@@ -55,11 +55,6 @@ const {username, lobby} = Qs.parse(location.search, {ignoreQueryPrefix: true});
 // Join lobby
 socket.emit('joinLobby', {username, lobby});
 
-// DEVELOPMENT - should get deleted after the end game works
-function callEnd() {
-  socket.emit('simEnd', {lobby : lobby});
-}
-
 //Reloads the page once play again button is closed which preserves the lobby and username
 playAgain.onclick = function() {
   location.reload();
