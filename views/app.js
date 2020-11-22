@@ -190,11 +190,51 @@ function outputLobbyName(lobby) {
 }
 
 socket.on('setRoles', ({users}) => {
-  //appendRoles(users);
   startCountDown();
-  updateScores(users);
+  // updateScores(users);
+  initRoles(users);
   document.getElementById("pregameMsg").innerHTML = "Controls: Use the arrow keys to move your character.<br />";
 });
+
+function initRoles(users){
+  userList.innerHTML = '';
+  users.forEach(user => {
+    const li = document.createElement('li');
+    let img = document.createElement('img');
+    let name = document.createElement('span');
+    let br = document.createElement('br');
+    let score = document.createElement("span");
+
+    score.innerHTML = "Score: 0";
+  
+    if (user.id === socket.id) {
+      name.innerHTML = " - " + user.username + " (You)";
+      li.style.fontWeight = "bold";
+      li.style.color = "blue";
+    }
+    else{
+      name.innerHTML = " - " + user.username;
+    }
+
+    if(user.playerRole == 1) 
+      img.src = "red_ghost.png";  
+    else if(user.playerRole == 2) 
+      img.src = "blue_ghost.png"; 
+    else if(user.playerRole == 3) 
+      img.src = "orange_ghost.png"; 
+    else if(user.playerRole == 4) 
+      img.src = "pacman.png"; 
+            
+    img.setAttribute("height", "35");
+    img.setAttribute("width", "35");
+    li.appendChild(img); 
+    li.appendChild(name); 
+    li.appendChild(br);  
+    li.appendChild(score); 
+    
+    userList.appendChild(li);
+  });
+}
 
 function startCountDown(){
   // Start 5 second countdown to start game
@@ -214,22 +254,16 @@ function startCountDown(){
 }
 
 function updateScores(users)  {
-  var scores = [0, 0, 0, 0];
-  var usersWithScore = [0, 0, 0, 0];
   users.forEach(user => {
-    scores[user.playerRole - 1] = user.score;
     if (user.playerRole == 1)
-      var scoreName = "Red Ghost: " + user.username + "\nScore: " + user.score ;
+      userList.children[0].children[3].innerHTML = "Score: " + user.score;
     if (user.playerRole == 2)
-      var scoreName = "Blue Ghost: " + user.username + "\nScore: " + user.score;
+      userList.children[1].children[3].innerHTML = "Score: " + user.score;
     if (user.playerRole == 3)
-      var scoreName = "Orange Ghost: " + user.username + "\nScore: " + user.score;
+      userList.children[2].children[3].innerHTML = "Score: " + user.score;
     if (user.playerRole == 4)
-      var scoreName = "Pacman: " + user.username + "\nScore: " + user.score;
-
-    usersWithScore[user.playerRole - 1] = {username: scoreName, id : user.id};
+      userList.children[3].children[3].innerHTML = "Score: " + user.score;
   });
-  outputUsers(usersWithScore);
 }
 
 

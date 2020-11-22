@@ -76,6 +76,10 @@ ul {
   font-size: 2rem;
 }
 
+li{
+  margin: 20px 0;
+}
+
 #start-button {
   margin-top: 20px;
 }
